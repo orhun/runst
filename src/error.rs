@@ -3,8 +3,12 @@
 thiserror_lite::err_enum! {
     #[derive(Debug)]
     pub enum Error {
-        #[error("unknown error")]
-        Unknown,
+        #[error("D-Bus error: `{}`")]
+        Dbus(#[from] dbus::Error),
+        #[error("D-Bus string error: `{}`")]
+        DbusString(String),
+        #[error("D-Bus argument error: `{}`")]
+        DbusArgument(String),
     }
 }
 

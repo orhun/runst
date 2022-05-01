@@ -8,4 +8,5 @@ edition = "2021"
 
 [dependencies]
 dbus = "0.9.5"
+x11rb = { version = "0.9.0", default-features = false }
 thiserror_lite = "0.1.0"

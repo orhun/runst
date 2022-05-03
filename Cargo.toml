@@ -8,5 +8,6 @@ edition = "2021"
 
 [dependencies]
 dbus = "0.9.5"
-x11rb = { version = "0.9.0", default-features = false }
+x11rb = { version = "0.9.0", default-features = false, features = ["allow-unsafe-code"] }
+cairo-rs = { version = "0.15.11", default-features = false, features = ["use_glib", "xcb"] }
 thiserror_lite = "0.1.0"

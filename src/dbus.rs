@@ -25,13 +25,15 @@ impl Dbus {
     /// Registers a handler for the notifications that are parsed from D-Bus messages.
     pub fn register_notification_handler<F>(&self, handler: F) -> Result<()>
     where
-        F: Fn(Notification) + Send + Sync + 'static,
+        F: Fn(Notification) -> Result<()> + Send + Sync + 'static,
     {
         self.connection.add_match(
             Notification::get_dbus_match_rule()?,
             move |_: (), _, message| {
                 match Notification::try_from(message) {
-                    Ok(notification) => handler(notification),
+                    Ok(notification) => {
+                        handler(notification).expect("failed to handle notification")
+                    }
                     Err(e) => eprintln!("{}", e),
                 }
                 true

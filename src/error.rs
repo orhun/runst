@@ -15,6 +15,10 @@ thiserror_lite::err_enum! {
         X11Connection(#[from] x11rb::errors::ConnectionError),
         #[error("X11 ID error: `{}`")]
         X11Id(#[from] x11rb::errors::ReplyOrIdError),
+        #[error("X11 error: `{}`")]
+        X11Other(String),
+        #[error("Cairo error: `{}`")]
+        Cairo(#[from] cairo::Error),
     }
 }
 

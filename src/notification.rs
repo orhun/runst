@@ -3,6 +3,7 @@ use crate::error::{Error, Result};
 use dbus::arg::messageitem::MessageItem;
 use dbus::message::{MatchRule, Message};
 use dbus::strings::Member;
+use std::fmt;
 use std::result::Result as StdResult;
 
 /// Representation of a notification.
@@ -14,6 +15,12 @@ pub struct Notification {
     pub app_name: String,
     /// Summary text.
     pub summary: String,
+}
+
+impl fmt::Display for Notification {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[{}] {}", self.app_name, self.summary)
+    }
 }
 
 impl<'a> TryFrom<&'a Message> for Notification {

@@ -8,6 +8,10 @@ edition = "2021"
 
 [dependencies]
 dbus = "0.9.5"
+dbus-crossroads = "0.5.0"
 x11rb = { version = "0.9.0", default-features = false, features = ["allow-unsafe-code"] }
 cairo-rs = { version = "0.15.11", default-features = false, features = ["use_glib", "xcb"] }
 thiserror_lite = "0.1.0"
+
+[build-dependencies]
+dbus-codegen = "0.10.0"

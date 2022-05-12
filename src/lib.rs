@@ -40,14 +40,14 @@ pub fn run() -> Result<()> {
 
     let x11_cloned = Arc::clone(&x11);
     let window_cloned = Arc::clone(&window);
-    dbus.register_notification_handler(move |notification| {
-        println!("{:?}", notification);
-        let mut window = window_cloned.write().expect("failed to retrieve window");
-        window.content = Some(notification);
-        x11_cloned.show_window(&window)?;
-        Ok(())
-    })?;
-
-    dbus.listen(Duration::from_millis(1000))?;
+    dbus.register_notification_handler(
+        move |notification| {
+            let mut window = window_cloned.write().expect("failed to retrieve window");
+            window.content = Some(notification);
+            x11_cloned.show_window(&window)?;
+            Ok(())
+        },
+        Duration::from_millis(1000),
+    )?;
     Ok(())
 }

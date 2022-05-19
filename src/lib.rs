@@ -11,12 +11,10 @@ pub mod dbus;
 /// X11 handler.
 pub mod x11;
 
-/// Notification.
-pub mod notification;
-
-use crate::dbus::Dbus;
+use crate::dbus::{Dbus, NotificationAction};
 use crate::error::Result;
 use crate::x11::X11;
+use std::sync::mpsc;
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
@@ -38,16 +36,25 @@ pub fn run() -> Result<()> {
             .expect("failed to handle X11 events");
     });
 
+    let timeout = Duration::from_millis(1000);
+    let (sender, receiver) = mpsc::channel();
+
+    thread::spawn(move || {
+        dbus.register_notification_handler(sender, timeout)
+            .expect("failed to register D-Bus notification handler");
+    });
+
     let x11_cloned = Arc::clone(&x11);
     let window_cloned = Arc::clone(&window);
-    dbus.register_notification_handler(
-        move |notification| {
-            let mut window = window_cloned.write().expect("failed to retrieve window");
-            window.content = Some(notification);
-            x11_cloned.show_window(&window)?;
-            Ok(())
-        },
-        Duration::from_millis(1000),
-    )?;
-    Ok(())
+
+    loop {
+        match receiver.recv()? {
+            NotificationAction::Show(notification) => {
+                let mut window = window_cloned.write().expect("failed to retrieve window");
+                window.content = Some(notification);
+                x11_cloned.show_window(&window)?;
+            }
+            NotificationAction::Close => {}
+        }
+    }
 }

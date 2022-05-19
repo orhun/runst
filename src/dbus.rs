@@ -1,9 +1,10 @@
 use crate::error;
-use crate::notification::Notification;
 use dbus::blocking::Connection;
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
 use dbus_crossroads::Crossroads;
+use std::fmt;
+use std::sync::mpsc::Sender;
 use std::time::Duration;
 
 mod dbus_server {
@@ -17,10 +18,38 @@ pub const NOTIFICATION_INTERFACE: &str = "org.freedesktop.Notifications";
 /// D-Bus path for desktop notifications.
 const NOTIFICATION_PATH: &str = "/org/freedesktop/Notifications";
 
+/// Representation of a notification.
+///
+/// See [D-Bus Notify Parameters](https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html)
+#[derive(Debug, Default)]
+pub struct Notification {
+    /// Name of the application that sends the notification.
+    pub app_name: String,
+    /// Summary text.
+    pub summary: String,
+}
+
+impl fmt::Display for Notification {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[{}] {}", self.app_name, self.summary)
+    }
+}
+
+/// Possible actions for a notification.
+#[derive(Debug)]
+pub enum NotificationAction {
+    /// Show a notification.
+    Show(Notification),
+    /// Close a notification.
+    Close,
+}
+
 /// D-Bus notification implementation.
 ///
 /// <https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html>
-pub struct DbusNotification {}
+pub struct DbusNotification {
+    sender: Sender<NotificationAction>,
+}
 
 impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
     fn get_capabilities(&mut self) -> Result<Vec<String>, dbus::MethodErr> {
@@ -29,20 +58,29 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
 
     fn notify(
         &mut self,
-        _app_name: String,
+        app_name: String,
         replaces_id: u32,
         _app_icon: String,
-        _summary: String,
+        summary: String,
         _body: String,
         _actions: Vec<String>,
         _hints: dbus::arg::PropMap,
         _expire_timeout: i32,
     ) -> Result<u32, dbus::MethodErr> {
-        Ok(replaces_id)
+        match self
+            .sender
+            .send(NotificationAction::Show(Notification { app_name, summary }))
+        {
+            Ok(_) => Ok(replaces_id),
+            Err(e) => Err(dbus::MethodErr::failed(&e)),
+        }
     }
 
     fn close_notification(&mut self, _id: u32) -> Result<(), dbus::MethodErr> {
-        Ok(())
+        match self.sender.send(NotificationAction::Close) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(dbus::MethodErr::failed(&e)),
+        }
     }
 
     fn get_server_information(
@@ -82,35 +120,22 @@ impl Dbus {
     /// Registers a handler for handling D-Bus notifications.
     ///
     /// Handles the incoming messages in a blocking manner.
-    pub fn register_notification_handler<F>(
+    pub fn register_notification_handler(
         mut self,
-        handler: F,
+        sender: Sender<NotificationAction>,
         timeout: Duration,
-    ) -> error::Result<()>
-    where
-        F: Fn(Notification) -> error::Result<()> + Send + Sync + 'static,
-    {
+    ) -> error::Result<()> {
         self.connection
             .request_name(NOTIFICATION_INTERFACE, false, true, false)?;
         let token = dbus_server::register_org_freedesktop_notifications(&mut self.crossroads);
         self.crossroads
-            .insert(NOTIFICATION_PATH, &[token], DbusNotification {});
+            .insert(NOTIFICATION_PATH, &[token], DbusNotification { sender });
         self.connection.start_receive(
             MatchRule::new_method_call(),
             Box::new(move |message, connection| {
-                println!("{:?}", message);
-
-                let notification = Notification::try_from(&message);
                 self.crossroads
                     .handle_message(message, connection)
                     .expect("failed to handle message");
-
-                match notification {
-                    Ok(notification) => {
-                        handler(notification).expect("failed to handle notification")
-                    }
-                    Err(e) => eprintln!("{}", e),
-                }
                 true
             }),
         );

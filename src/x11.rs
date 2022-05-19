@@ -1,5 +1,5 @@
+use crate::dbus::Notification;
 use crate::error::{Error, Result};
-use crate::notification::Notification;
 use cairo::{
     Context as CairoContext, XCBConnection as CairoXCBConnection, XCBDrawable, XCBSurface,
     XCBVisualType,

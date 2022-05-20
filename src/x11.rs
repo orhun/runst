@@ -124,6 +124,13 @@ impl X11 {
         Ok(())
     }
 
+    /// Hides the given X11 window.
+    pub fn hide_window(&self, window: &X11Window) -> Result<()> {
+        window.hide(&self.connection)?;
+        self.connection.flush()?;
+        Ok(())
+    }
+
     /// Handles the events.
     pub fn handle_events(&self, window: Arc<RwLock<X11Window>>) -> Result<()> {
         println!("Handling events");

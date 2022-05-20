@@ -1,5 +1,5 @@
 use crate::error;
-use dbus::blocking::Connection;
+use dbus::blocking::{Connection, Proxy};
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
 use dbus_crossroads::Crossroads;
@@ -13,7 +13,7 @@ mod dbus_server {
 }
 
 /// D-Bus interface for desktop notifications.
-pub const NOTIFICATION_INTERFACE: &str = "org.freedesktop.Notifications";
+const NOTIFICATION_INTERFACE: &str = "org.freedesktop.Notifications";
 
 /// D-Bus path for desktop notifications.
 const NOTIFICATION_PATH: &str = "/org/freedesktop/Notifications";
@@ -21,12 +21,16 @@ const NOTIFICATION_PATH: &str = "/org/freedesktop/Notifications";
 /// Representation of a notification.
 ///
 /// See [D-Bus Notify Parameters](https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html)
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Notification {
     /// Name of the application that sends the notification.
     pub app_name: String,
+    /// The optional notification ID.
+    pub replaces_id: u32,
     /// Summary text.
     pub summary: String,
+    /// The timeout time in milliseconds.
+    pub expire_timeout: Option<Duration>,
 }
 
 impl fmt::Display for Notification {
@@ -65,12 +69,21 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
         _body: String,
         _actions: Vec<String>,
         _hints: dbus::arg::PropMap,
-        _expire_timeout: i32,
+        expire_timeout: i32,
     ) -> Result<u32, dbus::MethodErr> {
-        match self
-            .sender
-            .send(NotificationAction::Show(Notification { app_name, summary }))
-        {
+        match self.sender.send(NotificationAction::Show(Notification {
+            app_name,
+            replaces_id,
+            summary,
+            expire_timeout: if expire_timeout != -1 {
+                match expire_timeout.try_into() {
+                    Ok(v) => Some(Duration::from_millis(v)),
+                    Err(_) => None,
+                }
+            } else {
+                None
+            },
+        })) {
             Ok(_) => Ok(replaces_id),
             Err(e) => Err(dbus::MethodErr::failed(&e)),
         }
@@ -99,14 +112,14 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
 ///
 /// [`D-Bus connection`]: Connection
 /// [`server`]: Crossroads
-pub struct Dbus {
+pub struct DbusServer {
     /// Connection to D-Bus.
     connection: Connection,
     /// Server handler.
     crossroads: Crossroads,
 }
 
-impl Dbus {
+impl DbusServer {
     /// Initializes the D-Bus controller.
     pub fn init() -> error::Result<Self> {
         let connection = Connection::new_session()?;
@@ -142,5 +155,38 @@ impl Dbus {
         loop {
             self.connection.process(timeout)?;
         }
+    }
+}
+
+/// Wrapper for a [`D-Bus connection`] without the server part.
+///
+/// [`D-Bus connection`]: Connection
+pub struct DbusClient {
+    /// Connection to D-Bus.
+    connection: Connection,
+}
+
+unsafe impl Send for DbusClient {}
+unsafe impl Sync for DbusClient {}
+
+impl DbusClient {
+    /// Initializes the D-Bus controller.
+    pub fn init() -> error::Result<Self> {
+        let connection = Connection::new_session()?;
+        Ok(Self { connection })
+    }
+
+    /// Closes the notification.
+    ///
+    /// See `org.freedesktop.Notifications.CloseNotification`
+    pub fn close_notification(&self, id: u32, timeout: Duration) -> error::Result<()> {
+        let proxy = Proxy::new(
+            NOTIFICATION_INTERFACE,
+            NOTIFICATION_PATH,
+            timeout,
+            &self.connection,
+        );
+        proxy.method_call(NOTIFICATION_INTERFACE, "CloseNotification", (id,))?;
+        Ok(())
     }
 }

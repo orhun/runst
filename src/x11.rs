@@ -132,7 +132,10 @@ impl X11 {
     }
 
     /// Handles the events.
-    pub fn handle_events(&self, window: Arc<RwLock<X11Window>>) -> Result<()> {
+    pub fn handle_events<F>(&self, window: Arc<RwLock<X11Window>>, on_press: F) -> Result<()>
+    where
+        F: Fn(Option<&Notification>),
+    {
         println!("Handling events");
         loop {
             self.connection.flush()?;
@@ -147,6 +150,7 @@ impl X11 {
                     }
                     Event::ButtonPress(_) => {
                         window.hide(&self.connection)?;
+                        on_press(window.content.as_ref())
                     }
                     _ => {}
                 }

@@ -3,6 +3,8 @@
 thiserror_lite::err_enum! {
     #[derive(Debug)]
     pub enum Error {
+        #[error("IO error: `{}`")]
+        Io(#[from] std::io::Error),
         #[error("D-Bus error: `{}`")]
         Dbus(#[from] dbus::Error),
         #[error("D-Bus string error: `{}`")]
@@ -20,7 +22,13 @@ thiserror_lite::err_enum! {
         #[error("Cairo error: `{}`")]
         Cairo(#[from] cairo::Error),
         #[error("Receiver error: `{}`")]
-        Receiver(#[from] std::sync::mpsc::RecvError)
+        Receiver(#[from] std::sync::mpsc::RecvError),
+        #[error("TOML parsing error: `{}`")]
+        Toml(#[from] toml::de::Error),
+        #[error("Scan error: `{}`")]
+        Scanf(String),
+        #[error("Integer conversion error: `{}`")]
+        IntegerConversion(#[from] std::num::TryFromIntError)
     }
 }
 

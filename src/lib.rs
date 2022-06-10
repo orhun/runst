@@ -11,6 +11,10 @@ pub mod dbus;
 /// X11 handler.
 pub mod x11;
 
+/// Configuration.
+pub mod config;
+
+use crate::config::{Config, DEFAULT_CONFIG};
 use crate::dbus::{DbusClient, DbusServer, NotificationAction};
 use crate::error::Result;
 use crate::x11::X11;
@@ -21,8 +25,10 @@ use std::time::Duration;
 
 /// Runs `runst`.
 pub fn run() -> Result<()> {
+    let config = Config::parse(DEFAULT_CONFIG)?;
+
     let mut x11 = X11::init(None)?;
-    let window = x11.create_window()?;
+    let window = x11.create_window(config.global.geometry)?;
     let dbus_server = DbusServer::init()?;
     let dbus_client = Arc::new(DbusClient::init()?);
     let timeout = Duration::from_millis(1000);

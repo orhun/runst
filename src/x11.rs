@@ -1,3 +1,4 @@
+use crate::config::Geometry;
 use crate::dbus::Notification;
 use crate::error::{Error, Result};
 use cairo::{
@@ -70,7 +71,7 @@ impl X11 {
     }
 
     /// Creates a window.
-    pub fn create_window(&mut self) -> Result<X11Window> {
+    pub fn create_window(&mut self, geometry: Geometry) -> Result<X11Window> {
         let visual_id = self.screen.root_visual;
         let mut visual_type = self
             .find_xcb_visualtype(visual_id)
@@ -81,10 +82,10 @@ impl X11 {
             COPY_DEPTH_FROM_PARENT,
             window_id,
             self.screen.root,
-            0,
-            0,
-            200,
-            30,
+            geometry.x.try_into()?,
+            geometry.y.try_into()?,
+            geometry.width.try_into()?,
+            geometry.height.try_into()?,
             0,
             WindowClass::INPUT_OUTPUT,
             visual_id,

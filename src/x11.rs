@@ -5,6 +5,8 @@ use cairo::{
     Context as CairoContext, XCBConnection as CairoXCBConnection, XCBDrawable, XCBSurface,
     XCBVisualType,
 };
+use pango::{Context as PangoContext, FontDescription, Layout as PangoLayout};
+use pangocairo::functions as pango_functions;
 use std::sync::{Arc, RwLock};
 use x11rb::connection::Connection;
 use x11rb::protocol::{xproto::*, Event};
@@ -71,7 +73,7 @@ impl X11 {
     }
 
     /// Creates a window.
-    pub fn create_window(&mut self, geometry: Geometry) -> Result<X11Window> {
+    pub fn create_window(&mut self, geometry: Geometry, font: String) -> Result<X11Window> {
         let visual_id = self.screen.root_visual;
         let mut visual_type = self
             .find_xcb_visualtype(visual_id)
@@ -96,12 +98,7 @@ impl X11 {
         )?;
         let surface = XCBSurface::create(&self.cairo, &XCBDrawable(window_id), &visual, 200, 30)?;
         let context = CairoContext::new(&surface)?;
-        Ok(X11Window {
-            id: window_id,
-            surface,
-            context,
-            content: None,
-        })
+        X11Window::new(window_id, context, font)
     }
 
     /// Find a `xcb_visualtype_t` based on its ID number
@@ -163,9 +160,14 @@ impl X11 {
 
 /// Represenation of a X11 window.
 pub struct X11Window {
-    id: u32,
-    surface: XCBSurface,
-    context: CairoContext,
+    /// Window ID.
+    pub id: u32,
+    /// Graphics renderer context.
+    pub cairo_context: CairoContext,
+    /// Text renderer context.
+    pub pango_context: PangoContext,
+    /// Window layout.
+    pub layout: PangoLayout,
     /// Content of the window.
     pub content: Option<Notification>,
 }
@@ -174,6 +176,22 @@ unsafe impl Send for X11Window {}
 unsafe impl Sync for X11Window {}
 
 impl X11Window {
+    /// Creates a new instance of window.
+    pub fn new(id: u32, cairo_context: CairoContext, font: String) -> Result<Self> {
+        let pango_context = pango_functions::create_context(&cairo_context)
+            .ok_or_else(|| Error::PangoOther(String::from("failed to create context")))?;
+        let layout = PangoLayout::new(&pango_context);
+        let font_description = FontDescription::from_string(&font);
+        pango_context.set_font_description(&font_description);
+        Ok(Self {
+            id,
+            cairo_context,
+            pango_context,
+            layout,
+            content: None,
+        })
+    }
+
     /// Shows the window.
     fn show(&self, connection: &impl Connection) -> Result<()> {
         connection.map_window(self.id)?;
@@ -189,13 +207,10 @@ impl X11Window {
     /// Draws the window content.
     fn draw(&self) -> Result<()> {
         if let Some(content) = &self.content {
-            self.context.set_source_rgb(0.0, 0.0, 0.0);
-            self.context.paint()?;
-            self.context.set_source_rgb(1., 1., 1.);
-            self.context.move_to(10.0, 30.0);
-            self.context.set_font_size(20.0);
-            self.context.show_text(&content.to_string())?;
-            self.surface.flush();
+            self.layout.set_text(&content.to_string());
+            self.cairo_context.set_source_rgb(1., 1., 1.);
+            self.cairo_context.move_to(0., 0.);
+            pango_functions::show_layout(&self.cairo_context, &self.layout);
         }
         Ok(())
     }

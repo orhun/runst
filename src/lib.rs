@@ -28,7 +28,7 @@ pub fn run() -> Result<()> {
     let config = Config::parse(DEFAULT_CONFIG)?;
 
     let mut x11 = X11::init(None)?;
-    let window = x11.create_window(config.global.geometry)?;
+    let window = x11.create_window(config.global.geometry, config.global.font)?;
     let dbus_server = DbusServer::init()?;
     let dbus_client = Arc::new(DbusClient::init()?);
     let timeout = Duration::from_millis(1000);

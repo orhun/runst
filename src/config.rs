@@ -31,6 +31,8 @@ pub struct GlobalConfig {
     /// Geometry of the notification window.
     #[serde(deserialize_with = "deserialize_geometry_from_string")]
     pub geometry: Geometry,
+    /// Text font.
+    pub font: String,
 }
 
 /// Custom deserializer implementation for converting `String` to [`Geometry`]

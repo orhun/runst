@@ -21,6 +21,8 @@ thiserror_lite::err_enum! {
         X11Other(String),
         #[error("Cairo error: `{}`")]
         Cairo(#[from] cairo::Error),
+        #[error("Pango error: `{}`")]
+        PangoOther(String),
         #[error("Receiver error: `{}`")]
         Receiver(#[from] std::sync::mpsc::RecvError),
         #[error("TOML parsing error: `{}`")]

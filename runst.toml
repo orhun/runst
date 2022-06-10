@@ -1,2 +1,3 @@
 [global]
     geometry = "350x200+500+250"
+    font = "Monospace 10"

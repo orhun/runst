@@ -17,6 +17,7 @@ thiserror_lite = "0.1.0"
 serde = { version = "1.0.135", features = ["derive"] }
 toml = "0.5.8"
 sscanf = "0.2.0"
+colorsys = "0.6.5"
 
 [build-dependencies]
 dbus-codegen = "0.10.0"

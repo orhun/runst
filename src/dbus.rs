@@ -1,4 +1,5 @@
 use crate::error;
+use dbus::arg::RefArg;
 use dbus::blocking::{Connection, Proxy};
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
@@ -18,6 +19,34 @@ const NOTIFICATION_INTERFACE: &str = "org.freedesktop.Notifications";
 /// D-Bus path for desktop notifications.
 const NOTIFICATION_PATH: &str = "/org/freedesktop/Notifications";
 
+/// Possible urgency levels for the notification.
+#[derive(Clone, Debug)]
+pub enum NotificationUrgency {
+    /// Low urgency.
+    Low,
+    /// Normal urgency (default).
+    Normal,
+    /// Critical urgency.
+    Critical,
+}
+
+impl From<u64> for NotificationUrgency {
+    fn from(value: u64) -> Self {
+        match value {
+            0 => Self::Low,
+            1 => Self::Normal,
+            2 => Self::Critical,
+            _ => Self::default(),
+        }
+    }
+}
+
+impl Default for NotificationUrgency {
+    fn default() -> Self {
+        Self::Normal
+    }
+}
+
 /// Representation of a notification.
 ///
 /// See [D-Bus Notify Parameters](https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html)
@@ -31,6 +60,8 @@ pub struct Notification {
     pub summary: String,
     /// The timeout time in milliseconds.
     pub expire_timeout: Option<Duration>,
+    /// Urgency.
+    pub urgency: NotificationUrgency,
 }
 
 impl fmt::Display for Notification {
@@ -68,7 +99,7 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
         summary: String,
         _body: String,
         _actions: Vec<String>,
-        _hints: dbus::arg::PropMap,
+        hints: dbus::arg::PropMap,
         expire_timeout: i32,
     ) -> Result<u32, dbus::MethodErr> {
         match self.sender.send(NotificationAction::Show(Notification {
@@ -83,6 +114,11 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
             } else {
                 None
             },
+            urgency: hints
+                .get("urgency")
+                .and_then(|v| v.as_u64())
+                .map(|v| v.into())
+                .unwrap_or_default(),
         })) {
             Ok(_) => Ok(replaces_id),
             Err(e) => Err(dbus::MethodErr::failed(&e)),

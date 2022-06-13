@@ -1,3 +1,18 @@
 [global]
     geometry = "350x200+500+250"
     font = "Monospace 10"
+
+[urgency_low]
+    background = "#000000"
+    foreground = "#505050"
+    timeout = 10
+
+[urgency_normal]
+    background = "#000000"
+    foreground = "#aaaaaa"
+    timeout = 10
+
+[urgency_critical]
+    background = "#000000"
+    foreground = "#ffffff"
+    timeout = 0

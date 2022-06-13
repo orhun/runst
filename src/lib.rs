@@ -25,10 +25,10 @@ use std::time::Duration;
 
 /// Runs `runst`.
 pub fn run() -> Result<()> {
-    let config = Config::parse(DEFAULT_CONFIG)?;
+    let config = Arc::new(Config::parse(DEFAULT_CONFIG)?);
 
     let mut x11 = X11::init(None)?;
-    let window = x11.create_window(config.global.geometry, config.global.font)?;
+    let window = x11.create_window(&config.global)?;
     let dbus_server = DbusServer::init()?;
     let dbus_client = Arc::new(DbusClient::init()?);
     let timeout = Duration::from_millis(1000);
@@ -39,9 +39,10 @@ pub fn run() -> Result<()> {
     let x11_cloned = Arc::clone(&x11);
     let window_cloned = Arc::clone(&window);
     let dbus_client_cloned = Arc::clone(&dbus_client);
+    let config_cloned = Arc::clone(&config);
     thread::spawn(move || {
         x11_cloned
-            .handle_events(window_cloned, |notification| {
+            .handle_events(config_cloned, window_cloned, |notification| {
                 if let Some(notification) = notification {
                     dbus_client_cloned
                         .close_notification(notification.replaces_id, timeout)
@@ -65,10 +66,18 @@ pub fn run() -> Result<()> {
     loop {
         match receiver.recv()? {
             NotificationAction::Show(notification) => {
-                if let Some(expire_timeout) = notification.expire_timeout {
+                let timeout = notification.expire_timeout.unwrap_or_else(|| {
+                    Duration::from_secs(
+                        config
+                            .get_urgency_config(&notification.urgency)
+                            .timeout
+                            .into(),
+                    )
+                });
+                if !timeout.is_zero() {
                     let dbus_client_cloned = Arc::clone(&dbus_client);
                     thread::spawn(move || {
-                        thread::sleep(expire_timeout);
+                        thread::sleep(timeout);
                         dbus_client_cloned
                             .close_notification(notification.replaces_id, timeout)
                             .expect("failed to close notification");

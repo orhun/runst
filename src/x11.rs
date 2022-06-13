@@ -1,10 +1,11 @@
-use crate::config::Geometry;
+use crate::config::{Config, GlobalConfig};
 use crate::dbus::Notification;
 use crate::error::{Error, Result};
 use cairo::{
     Context as CairoContext, XCBConnection as CairoXCBConnection, XCBDrawable, XCBSurface,
     XCBVisualType,
 };
+use colorsys::ColorAlpha;
 use pango::{Context as PangoContext, FontDescription, Layout as PangoLayout};
 use pangocairo::functions as pango_functions;
 use std::sync::{Arc, RwLock};
@@ -73,7 +74,7 @@ impl X11 {
     }
 
     /// Creates a window.
-    pub fn create_window(&mut self, geometry: Geometry, font: String) -> Result<X11Window> {
+    pub fn create_window(&mut self, config: &GlobalConfig) -> Result<X11Window> {
         let visual_id = self.screen.root_visual;
         let mut visual_type = self
             .find_xcb_visualtype(visual_id)
@@ -84,10 +85,10 @@ impl X11 {
             COPY_DEPTH_FROM_PARENT,
             window_id,
             self.screen.root,
-            geometry.x.try_into()?,
-            geometry.y.try_into()?,
-            geometry.width.try_into()?,
-            geometry.height.try_into()?,
+            config.geometry.x.try_into()?,
+            config.geometry.y.try_into()?,
+            config.geometry.width.try_into()?,
+            config.geometry.height.try_into()?,
             0,
             WindowClass::INPUT_OUTPUT,
             visual_id,
@@ -96,9 +97,15 @@ impl X11 {
                 .override_redirect(1)
                 .event_mask(EventMask::EXPOSURE | EventMask::BUTTON_PRESS),
         )?;
-        let surface = XCBSurface::create(&self.cairo, &XCBDrawable(window_id), &visual, 200, 30)?;
+        let surface = XCBSurface::create(
+            &self.cairo,
+            &XCBDrawable(window_id),
+            &visual,
+            config.geometry.width.try_into()?,
+            config.geometry.height.try_into()?,
+        )?;
         let context = CairoContext::new(&surface)?;
-        X11Window::new(window_id, context, font)
+        X11Window::new(window_id, context, &config.font)
     }
 
     /// Find a `xcb_visualtype_t` based on its ID number
@@ -130,7 +137,12 @@ impl X11 {
     }
 
     /// Handles the events.
-    pub fn handle_events<F>(&self, window: Arc<RwLock<X11Window>>, on_press: F) -> Result<()>
+    pub fn handle_events<F>(
+        &self,
+        config: Arc<Config>,
+        window: Arc<RwLock<X11Window>>,
+        on_press: F,
+    ) -> Result<()>
     where
         F: Fn(Option<&Notification>),
     {
@@ -144,7 +156,7 @@ impl X11 {
                 let window = window.read().expect("failed to retrieve window");
                 match event {
                     Event::Expose(_) => {
-                        window.draw()?;
+                        window.draw(&config)?;
                     }
                     Event::ButtonPress(_) => {
                         window.hide(&self.connection)?;
@@ -177,11 +189,11 @@ unsafe impl Sync for X11Window {}
 
 impl X11Window {
     /// Creates a new instance of window.
-    pub fn new(id: u32, cairo_context: CairoContext, font: String) -> Result<Self> {
+    pub fn new(id: u32, cairo_context: CairoContext, font: &str) -> Result<Self> {
         let pango_context = pango_functions::create_context(&cairo_context)
             .ok_or_else(|| Error::PangoOther(String::from("failed to create context")))?;
         let layout = PangoLayout::new(&pango_context);
-        let font_description = FontDescription::from_string(&font);
+        let font_description = FontDescription::from_string(font);
         pango_context.set_font_description(&font_description);
         Ok(Self {
             id,
@@ -205,11 +217,26 @@ impl X11Window {
     }
 
     /// Draws the window content.
-    fn draw(&self) -> Result<()> {
+    fn draw(&self, config: &Config) -> Result<()> {
         if let Some(content) = &self.content {
-            self.layout.set_text(&content.to_string());
-            self.cairo_context.set_source_rgb(1., 1., 1.);
+            let background_color = config.get_urgency_config(&content.urgency).background;
+            self.cairo_context.set_source_rgba(
+                background_color.red() / 255.0,
+                background_color.green() / 255.0,
+                background_color.blue() / 255.0,
+                background_color.alpha(),
+            );
+            self.cairo_context.fill()?;
+            self.cairo_context.paint()?;
+            let foreground_color = config.get_urgency_config(&content.urgency).foreground;
+            self.cairo_context.set_source_rgba(
+                foreground_color.red() / 255.0,
+                foreground_color.green() / 255.0,
+                foreground_color.blue() / 255.0,
+                foreground_color.alpha(),
+            );
             self.cairo_context.move_to(0., 0.);
+            self.layout.set_text(&content.to_string());
             pango_functions::show_layout(&self.cairo_context, &self.layout);
         }
         Ok(())

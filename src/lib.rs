@@ -34,21 +34,26 @@ pub fn run() -> Result<()> {
     let timeout = Duration::from_millis(1000);
 
     let x11 = Arc::new(x11);
-    let window = Arc::new(RwLock::new(window));
+    let window = Arc::new(window);
+    let notifications = Arc::new(RwLock::new(Vec::new()));
 
     let x11_cloned = Arc::clone(&x11);
     let window_cloned = Arc::clone(&window);
     let dbus_client_cloned = Arc::clone(&dbus_client);
     let config_cloned = Arc::clone(&config);
+    let notifications_cloned = Arc::clone(&notifications);
     thread::spawn(move || {
         x11_cloned
-            .handle_events(config_cloned, window_cloned, |notification| {
-                if let Some(notification) = notification {
+            .handle_events(
+                window_cloned,
+                notifications_cloned,
+                config_cloned,
+                |notification| {
                     dbus_client_cloned
                         .close_notification(notification.replaces_id, timeout)
                         .expect("failed to close notification");
-                }
-            })
+                },
+            )
             .expect("failed to handle X11 events");
     });
 
@@ -61,8 +66,6 @@ pub fn run() -> Result<()> {
     });
 
     let x11_cloned = Arc::clone(&x11);
-    let window_cloned = Arc::clone(&window);
-
     loop {
         match receiver.recv()? {
             NotificationAction::Show(notification) => {
@@ -83,13 +86,20 @@ pub fn run() -> Result<()> {
                             .expect("failed to close notification");
                     });
                 }
-                let mut window = window_cloned.write().expect("failed to retrieve window");
-                window.content = Some(notification);
+                notifications
+                    .write()
+                    .expect("failed to retrieve notifications")
+                    .push(notification);
                 x11_cloned.show_window(&window)?;
             }
             NotificationAction::Close => {
-                let window = window_cloned.write().expect("failed to retrieve window");
+                let notifications = notifications
+                    .read()
+                    .expect("failed to retrieve notifications");
                 x11_cloned.hide_window(&window)?;
+                if notifications.iter().filter(|v| !v.is_read).count() >= 1 {
+                    x11_cloned.show_window(&window)?;
+                }
             }
         }
     }

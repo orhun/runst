@@ -62,6 +62,8 @@ pub struct Notification {
     pub expire_timeout: Option<Duration>,
     /// Urgency.
     pub urgency: NotificationUrgency,
+    /// Whether if the notification is read.
+    pub is_read: bool,
 }
 
 impl fmt::Display for Notification {
@@ -119,6 +121,7 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
                 .and_then(|v| v.as_u64())
                 .map(|v| v.into())
                 .unwrap_or_default(),
+            is_read: false,
         })) {
             Ok(_) => Ok(replaces_id),
             Err(e) => Err(dbus::MethodErr::failed(&e)),

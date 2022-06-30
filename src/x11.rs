@@ -139,28 +139,34 @@ impl X11 {
     /// Handles the events.
     pub fn handle_events<F>(
         &self,
+        window: Arc<X11Window>,
+        notifications: Arc<RwLock<Vec<Notification>>>,
         config: Arc<Config>,
-        window: Arc<RwLock<X11Window>>,
         on_press: F,
     ) -> Result<()>
     where
-        F: Fn(Option<&Notification>),
+        F: Fn(&Notification),
     {
-        println!("Handling events");
         loop {
             self.connection.flush()?;
             let event = self.connection.wait_for_event()?;
             let mut event_opt = Some(event);
             while let Some(event) = event_opt {
                 println!("{:?}", event);
-                let window = window.read().expect("failed to retrieve window");
                 match event {
                     Event::Expose(_) => {
-                        window.draw(&config)?;
+                        window.draw(&notifications, &config)?;
                     }
                     Event::ButtonPress(_) => {
-                        window.hide(&self.connection)?;
-                        on_press(window.content.as_ref())
+                        let mut notifications = notifications
+                            .write()
+                            .expect("failed to retrieve notifications");
+                        let mut unread_notifications = notifications
+                            .iter_mut()
+                            .filter(|v| !v.is_read)
+                            .collect::<Vec<&mut Notification>>();
+                        unread_notifications[0].is_read = true;
+                        on_press(unread_notifications[0]);
                     }
                     _ => {}
                 }
@@ -180,8 +186,6 @@ pub struct X11Window {
     pub pango_context: PangoContext,
     /// Window layout.
     pub layout: PangoLayout,
-    /// Content of the window.
-    pub content: Option<Notification>,
 }
 
 unsafe impl Send for X11Window {}
@@ -200,7 +204,6 @@ impl X11Window {
             cairo_context,
             pango_context,
             layout,
-            content: None,
         })
     }
 
@@ -217,8 +220,11 @@ impl X11Window {
     }
 
     /// Draws the window content.
-    fn draw(&self, config: &Config) -> Result<()> {
-        if let Some(content) = &self.content {
+    fn draw(&self, notifications: &Arc<RwLock<Vec<Notification>>>, config: &Config) -> Result<()> {
+        let notifications = notifications
+            .read()
+            .expect("failed to retrieve notifications");
+        if let Some(content) = &notifications.iter().rev().filter(|v| !v.is_read).last() {
             let background_color = config.get_urgency_config(&content.urgency).background;
             self.cairo_context.set_source_rgba(
                 background_color.red() / 255.0,

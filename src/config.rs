@@ -75,7 +75,7 @@ pub struct Geometry {
     pub y: u32,
 }
 
-impl<'a> FromStr for Geometry {
+impl FromStr for Geometry {
     type Err = Error;
     fn from_str(s: &str) -> StdResult<Self, Self::Err> {
         let (width, height, x, y) =

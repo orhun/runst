@@ -4,7 +4,7 @@ use dbus::blocking::{Connection, Proxy};
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
 use dbus_crossroads::Crossroads;
-use std::fmt;
+use serde::Serialize;
 use std::sync::mpsc::Sender;
 use std::time::Duration;
 
@@ -20,7 +20,7 @@ const NOTIFICATION_INTERFACE: &str = "org.freedesktop.Notifications";
 const NOTIFICATION_PATH: &str = "/org/freedesktop/Notifications";
 
 /// Possible urgency levels for the notification.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub enum NotificationUrgency {
     /// Low urgency.
     Low,
@@ -50,7 +50,7 @@ impl Default for NotificationUrgency {
 /// Representation of a notification.
 ///
 /// See [D-Bus Notify Parameters](https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html)
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize)]
 pub struct Notification {
     /// Name of the application that sends the notification.
     pub app_name: String,
@@ -58,18 +58,14 @@ pub struct Notification {
     pub replaces_id: u32,
     /// Summary text.
     pub summary: String,
+    /// Body.
+    pub body: String,
     /// The timeout time in milliseconds.
     pub expire_timeout: Option<Duration>,
     /// Urgency.
     pub urgency: NotificationUrgency,
     /// Whether if the notification is read.
     pub is_read: bool,
-}
-
-impl fmt::Display for Notification {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}] {}", self.app_name, self.summary)
-    }
 }
 
 /// Possible actions for a notification.
@@ -99,7 +95,7 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
         replaces_id: u32,
         _app_icon: String,
         summary: String,
-        _body: String,
+        body: String,
         _actions: Vec<String>,
         hints: dbus::arg::PropMap,
         expire_timeout: i32,
@@ -108,6 +104,7 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
             app_name,
             replaces_id,
             summary,
+            body,
             expire_timeout: if expire_timeout != -1 {
                 match expire_timeout.try_into() {
                     Ok(v) => Some(Duration::from_millis(v)),

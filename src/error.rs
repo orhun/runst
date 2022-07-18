@@ -30,7 +30,9 @@ thiserror_lite::err_enum! {
         #[error("Scan error: `{}`")]
         Scanf(String),
         #[error("Integer conversion error: `{}`")]
-        IntegerConversion(#[from] std::num::TryFromIntError)
+        IntegerConversion(#[from] std::num::TryFromIntError),
+        #[error("Template error: `{}`")]
+        Template(#[from] tinytemplate::error::Error)
     }
 }
 

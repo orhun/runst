@@ -9,6 +9,7 @@ use colorsys::ColorAlpha;
 use pango::{Context as PangoContext, FontDescription, Layout as PangoLayout};
 use pangocairo::functions as pango_functions;
 use std::sync::{Arc, RwLock};
+use tinytemplate::TinyTemplate;
 use x11rb::connection::Connection;
 use x11rb::protocol::{xproto::*, Event};
 use x11rb::xcb_ffi::XCBConnection;
@@ -105,7 +106,12 @@ impl X11 {
             config.geometry.height.try_into()?,
         )?;
         let context = CairoContext::new(&surface)?;
-        X11Window::new(window_id, context, &config.font)
+        X11Window::new(
+            window_id,
+            context,
+            &config.font,
+            Box::leak(config.format.to_string().into_boxed_str()),
+        )
     }
 
     /// Find a `xcb_visualtype_t` based on its ID number
@@ -186,6 +192,8 @@ pub struct X11Window {
     pub pango_context: PangoContext,
     /// Window layout.
     pub layout: PangoLayout,
+    /// Text format.
+    pub template: TinyTemplate<'static>,
 }
 
 unsafe impl Send for X11Window {}
@@ -193,17 +201,25 @@ unsafe impl Sync for X11Window {}
 
 impl X11Window {
     /// Creates a new instance of window.
-    pub fn new(id: u32, cairo_context: CairoContext, font: &str) -> Result<Self> {
+    pub fn new(
+        id: u32,
+        cairo_context: CairoContext,
+        font: &str,
+        format: &'static str,
+    ) -> Result<Self> {
         let pango_context = pango_functions::create_context(&cairo_context)
             .ok_or_else(|| Error::PangoOther(String::from("failed to create context")))?;
         let layout = PangoLayout::new(&pango_context);
         let font_description = FontDescription::from_string(font);
         pango_context.set_font_description(&font_description);
+        let mut template = TinyTemplate::new();
+        template.add_template("notification_message", format)?;
         Ok(Self {
             id,
             cairo_context,
             pango_context,
             layout,
+            template,
         })
     }
 
@@ -224,8 +240,11 @@ impl X11Window {
         let notifications = notifications
             .read()
             .expect("failed to retrieve notifications");
-        if let Some(content) = &notifications.iter().rev().filter(|v| !v.is_read).last() {
-            let background_color = config.get_urgency_config(&content.urgency).background;
+        if let Some(notification) = &notifications.iter().rev().filter(|v| !v.is_read).last() {
+            let message = self
+                .template
+                .render("notification_message", &notification)?;
+            let background_color = config.get_urgency_config(&notification.urgency).background;
             self.cairo_context.set_source_rgba(
                 background_color.red() / 255.0,
                 background_color.green() / 255.0,
@@ -234,7 +253,7 @@ impl X11Window {
             );
             self.cairo_context.fill()?;
             self.cairo_context.paint()?;
-            let foreground_color = config.get_urgency_config(&content.urgency).foreground;
+            let foreground_color = config.get_urgency_config(&notification.urgency).foreground;
             self.cairo_context.set_source_rgba(
                 foreground_color.red() / 255.0,
                 foreground_color.green() / 255.0,
@@ -242,7 +261,7 @@ impl X11Window {
                 foreground_color.alpha(),
             );
             self.cairo_context.move_to(0., 0.);
-            self.layout.set_text(&content.to_string());
+            self.layout.set_markup(&message);
             pango_functions::show_layout(&self.cairo_context, &self.layout);
         }
         Ok(())

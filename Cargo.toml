@@ -18,6 +18,7 @@ serde = { version = "1.0.135", features = ["derive"] }
 toml = "0.5.8"
 sscanf = "0.2.0"
 colorsys = "0.6.5"
+tinytemplate = "1.2.1"
 
 [build-dependencies]
 dbus-codegen = "0.10.0"

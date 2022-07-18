@@ -51,6 +51,8 @@ pub struct GlobalConfig {
     pub geometry: Geometry,
     /// Text font.
     pub font: String,
+    /// The format of the notification message.
+    pub format: String,
 }
 
 /// Custom deserializer implementation for converting `String` to [`Geometry`]

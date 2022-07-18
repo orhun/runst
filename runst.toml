@@ -1,6 +1,7 @@
 [global]
     geometry = "350x200+500+250"
     font = "Monospace 10"
+    format = "[{app_name}] <b>{summary}</b> {body}"
 
 [urgency_low]
     background = "#000000"

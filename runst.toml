@@ -7,13 +7,16 @@
     background = "#000000"
     foreground = "#505050"
     timeout = 10
+    text = "low"
 
 [urgency_normal]
     background = "#000000"
     foreground = "#aaaaaa"
     timeout = 10
+    text = "normal"
 
 [urgency_critical]
     background = "#000000"
     foreground = "#ffffff"
     timeout = 0
+    text = "critical"

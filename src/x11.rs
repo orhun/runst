@@ -1,5 +1,5 @@
 use crate::config::{Config, GlobalConfig};
-use crate::dbus::Notification;
+use crate::dbus::{Notification, NotificationContext};
 use crate::error::{Error, Result};
 use cairo::{
     Context as CairoContext, XCBConnection as CairoXCBConnection, XCBDrawable, XCBSurface,
@@ -241,10 +241,17 @@ impl X11Window {
             .read()
             .expect("failed to retrieve notifications");
         if let Some(notification) = &notifications.iter().rev().filter(|v| !v.is_read).last() {
-            let message = self
-                .template
-                .render("notification_message", &notification)?;
-            let background_color = config.get_urgency_config(&notification.urgency).background;
+            let urgency_config = config.get_urgency_config(&notification.urgency);
+            let message = self.template.render(
+                "notification_message",
+                &NotificationContext {
+                    app_name: &notification.app_name,
+                    summary: &notification.summary,
+                    body: &notification.body,
+                    urgency: &urgency_config.text,
+                },
+            )?;
+            let background_color = urgency_config.background;
             self.cairo_context.set_source_rgba(
                 background_color.red() / 255.0,
                 background_color.green() / 255.0,
@@ -253,7 +260,7 @@ impl X11Window {
             );
             self.cairo_context.fill()?;
             self.cairo_context.paint()?;
-            let foreground_color = config.get_urgency_config(&notification.urgency).foreground;
+            let foreground_color = urgency_config.foreground;
             self.cairo_context.set_source_rgba(
                 foreground_color.red() / 255.0,
                 foreground_color.green() / 255.0,

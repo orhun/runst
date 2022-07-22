@@ -108,6 +108,8 @@ pub struct UrgencyConfig {
     pub foreground: Rgb,
     /// Timeout value.
     pub timeout: u32,
+    /// Text.
+    pub text: String,
 }
 
 /// Custom deserializer implementation for converting `String` to [`Rgb`]

@@ -55,16 +55,19 @@ pub struct Notification {
     /// Name of the application that sends the notification.
     pub app_name: String,
     /// The optional notification ID.
+    #[serde(skip_serializing)]
     pub replaces_id: u32,
     /// Summary text.
     pub summary: String,
     /// Body.
     pub body: String,
     /// The timeout time in milliseconds.
+    #[serde(skip_serializing)]
     pub expire_timeout: Option<Duration>,
     /// Urgency.
     pub urgency: NotificationUrgency,
     /// Whether if the notification is read.
+    #[serde(skip_serializing)]
     pub is_read: bool,
 }
 

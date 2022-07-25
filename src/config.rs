@@ -1,4 +1,4 @@
-use crate::dbus::NotificationUrgency;
+use crate::dbus::{Notification, NotificationUrgency};
 use crate::error::{Error, Result};
 use colorsys::Rgb;
 use serde::de::{Deserializer, Error as SerdeError};
@@ -6,8 +6,10 @@ use serde::ser::Serializer;
 use serde::{Deserialize, Serialize};
 use sscanf::scanf;
 use std::fs;
+use std::process::Command;
 use std::result::Result as StdResult;
 use std::str::FromStr;
+use tinytemplate::TinyTemplate;
 
 /// Name of the default configuration file.
 pub const DEFAULT_CONFIG: &str = concat!(env!("CARGO_PKG_NAME"), ".toml");
@@ -110,6 +112,23 @@ pub struct UrgencyConfig {
     pub timeout: u32,
     /// Text.
     pub text: String,
+    /// Custom OS commands to run.
+    pub custom_commands: Option<Vec<String>>,
+}
+
+impl UrgencyConfig {
+    /// Runs the custom OS commands that are determined by configuration.
+    pub fn run_commands(&self, notification: &Notification) -> Result<()> {
+        if let Some(commands) = &self.custom_commands {
+            for command in commands {
+                let mut template = TinyTemplate::new();
+                template.add_template("command", command)?;
+                let command = template.render("command", &notification.into_context(&self.text))?;
+                Command::new("sh").args(&["-c", &command]).spawn()?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Custom deserializer implementation for converting `String` to [`Rgb`]

@@ -20,3 +20,4 @@
     foreground = "#ffffff"
     timeout = 0
     text = "critical"
+    custom_commands = []

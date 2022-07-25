@@ -68,6 +68,18 @@ pub struct Notification {
     pub is_read: bool,
 }
 
+impl Notification {
+    /// Converts [`Notification`] into [`NotificationContext`].
+    pub fn into_context<'a>(&'a self, urgency_text: &'a str) -> NotificationContext {
+        NotificationContext {
+            app_name: &self.app_name,
+            summary: &self.summary,
+            body: &self.body,
+            urgency: urgency_text,
+        }
+    }
+}
+
 /// Template context for the notification.
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct NotificationContext<'a> {

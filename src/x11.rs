@@ -1,5 +1,5 @@
 use crate::config::{Config, GlobalConfig};
-use crate::dbus::{Notification, NotificationContext};
+use crate::dbus::Notification;
 use crate::error::{Error, Result};
 use cairo::{
     Context as CairoContext, XCBConnection as CairoXCBConnection, XCBDrawable, XCBSurface,
@@ -242,14 +242,10 @@ impl X11Window {
             .expect("failed to retrieve notifications");
         if let Some(notification) = &notifications.iter().rev().filter(|v| !v.is_read).last() {
             let urgency_config = config.get_urgency_config(&notification.urgency);
+            urgency_config.run_commands(notification)?;
             let message = self.template.render(
                 "notification_message",
-                &NotificationContext {
-                    app_name: &notification.app_name,
-                    summary: &notification.summary,
-                    body: &notification.body,
-                    urgency: &urgency_config.text,
-                },
+                &notification.into_context(&urgency_config.text),
             )?;
             let background_color = urgency_config.background;
             self.cairo_context.set_source_rgba(

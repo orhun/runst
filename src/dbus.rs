@@ -1,10 +1,10 @@
 use crate::error;
+use crate::notification::{Action, Notification};
 use dbus::arg::RefArg;
 use dbus::blocking::{Connection, Proxy};
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
 use dbus_crossroads::Crossroads;
-use serde::Serialize;
 use std::sync::mpsc::Sender;
 use std::time::Duration;
 
@@ -19,94 +19,11 @@ const NOTIFICATION_INTERFACE: &str = "org.freedesktop.Notifications";
 /// D-Bus path for desktop notifications.
 const NOTIFICATION_PATH: &str = "/org/freedesktop/Notifications";
 
-/// Possible urgency levels for the notification.
-#[derive(Clone, Debug, Serialize)]
-pub enum NotificationUrgency {
-    /// Low urgency.
-    Low,
-    /// Normal urgency (default).
-    Normal,
-    /// Critical urgency.
-    Critical,
-}
-
-impl From<u64> for NotificationUrgency {
-    fn from(value: u64) -> Self {
-        match value {
-            0 => Self::Low,
-            1 => Self::Normal,
-            2 => Self::Critical,
-            _ => Self::default(),
-        }
-    }
-}
-
-impl Default for NotificationUrgency {
-    fn default() -> Self {
-        Self::Normal
-    }
-}
-
-/// Representation of a notification.
-///
-/// See [D-Bus Notify Parameters](https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html)
-#[derive(Clone, Debug, Default)]
-pub struct Notification {
-    /// Name of the application that sends the notification.
-    pub app_name: String,
-    /// The optional notification ID.
-    pub replaces_id: u32,
-    /// Summary text.
-    pub summary: String,
-    /// Body.
-    pub body: String,
-    /// The timeout time in milliseconds.
-    pub expire_timeout: Option<Duration>,
-    /// Urgency.
-    pub urgency: NotificationUrgency,
-    /// Whether if the notification is read.
-    pub is_read: bool,
-}
-
-impl Notification {
-    /// Converts [`Notification`] into [`NotificationContext`].
-    pub fn into_context<'a>(&'a self, urgency_text: &'a str) -> NotificationContext {
-        NotificationContext {
-            app_name: &self.app_name,
-            summary: &self.summary,
-            body: &self.body,
-            urgency: urgency_text,
-        }
-    }
-}
-
-/// Template context for the notification.
-#[derive(Clone, Debug, Default, Serialize)]
-pub struct NotificationContext<'a> {
-    /// Name of the application that sends the notification.
-    pub app_name: &'a str,
-    /// Summary text.
-    pub summary: &'a str,
-    /// Body.
-    pub body: &'a str,
-    /// Urgency.
-    pub urgency: &'a str,
-}
-
-/// Possible actions for a notification.
-#[derive(Debug)]
-pub enum NotificationAction {
-    /// Show a notification.
-    Show(Notification),
-    /// Close a notification.
-    Close,
-}
-
 /// D-Bus notification implementation.
 ///
 /// <https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html>
 pub struct DbusNotification {
-    sender: Sender<NotificationAction>,
+    sender: Sender<Action>,
 }
 
 impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
@@ -125,7 +42,7 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
         hints: dbus::arg::PropMap,
         expire_timeout: i32,
     ) -> Result<u32, dbus::MethodErr> {
-        match self.sender.send(NotificationAction::Show(Notification {
+        match self.sender.send(Action::Show(Notification {
             app_name,
             replaces_id,
             summary,
@@ -151,7 +68,7 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
     }
 
     fn close_notification(&mut self, _id: u32) -> Result<(), dbus::MethodErr> {
-        match self.sender.send(NotificationAction::Close) {
+        match self.sender.send(Action::Close) {
             Ok(_) => Ok(()),
             Err(e) => Err(dbus::MethodErr::failed(&e)),
         }
@@ -196,7 +113,7 @@ impl DbusServer {
     /// Handles the incoming messages in a blocking manner.
     pub fn register_notification_handler(
         mut self,
-        sender: Sender<NotificationAction>,
+        sender: Sender<Action>,
         timeout: Duration,
     ) -> error::Result<()> {
         self.connection

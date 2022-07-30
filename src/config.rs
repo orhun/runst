@@ -1,5 +1,5 @@
-use crate::dbus::{Notification, NotificationUrgency};
 use crate::error::{Error, Result};
+use crate::notification::{Notification, Urgency};
 use colorsys::Rgb;
 use serde::de::{Deserializer, Error as SerdeError};
 use serde::ser::Serializer;
@@ -36,11 +36,11 @@ impl Config {
     }
 
     /// Returns the appropriate urgency configuration.
-    pub fn get_urgency_config(&self, urgency: &NotificationUrgency) -> UrgencyConfig {
+    pub fn get_urgency_config(&self, urgency: &Urgency) -> UrgencyConfig {
         match urgency {
-            NotificationUrgency::Low => self.urgency_low.clone(),
-            NotificationUrgency::Normal => self.urgency_normal.clone(),
-            NotificationUrgency::Critical => self.urgency_critical.clone(),
+            Urgency::Low => self.urgency_low.clone(),
+            Urgency::Normal => self.urgency_normal.clone(),
+            Urgency::Critical => self.urgency_critical.clone(),
         }
     }
 }

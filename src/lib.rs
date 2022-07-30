@@ -14,9 +14,13 @@ pub mod x11;
 /// Configuration.
 pub mod config;
 
+/// Notification manager.
+pub mod notification;
+
 use crate::config::{Config, DEFAULT_CONFIG};
-use crate::dbus::{DbusClient, DbusServer, NotificationAction};
+use crate::dbus::{DbusClient, DbusServer};
 use crate::error::Result;
+use crate::notification::Action;
 use crate::x11::X11;
 use std::sync::mpsc;
 use std::sync::{Arc, RwLock};
@@ -68,7 +72,7 @@ pub fn run() -> Result<()> {
     let x11_cloned = Arc::clone(&x11);
     loop {
         match receiver.recv()? {
-            NotificationAction::Show(notification) => {
+            Action::Show(notification) => {
                 let timeout = notification.expire_timeout.unwrap_or_else(|| {
                     Duration::from_secs(
                         config
@@ -92,7 +96,7 @@ pub fn run() -> Result<()> {
                     .push(notification);
                 x11_cloned.show_window(&window)?;
             }
-            NotificationAction::Close => {
+            Action::Close => {
                 let notifications = notifications
                     .read()
                     .expect("failed to retrieve notifications");

@@ -1,6 +1,6 @@
 use crate::config::{Config, GlobalConfig};
-use crate::dbus::Notification;
 use crate::error::{Error, Result};
+use crate::notification::Notification;
 use cairo::{
     Context as CairoContext, XCBConnection as CairoXCBConnection, XCBDrawable, XCBSurface,
     XCBVisualType,
@@ -158,7 +158,6 @@ impl X11 {
             let event = self.connection.wait_for_event()?;
             let mut event_opt = Some(event);
             while let Some(event) = event_opt {
-                println!("{:?}", event);
                 match event {
                     Event::Expose(_) => {
                         window.draw(&notifications, &config)?;

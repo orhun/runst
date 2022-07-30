@@ -1,5 +1,5 @@
 [global]
-    geometry = "350x200+500+250"
+    geometry = "1920x23+0+0"
     font = "Monospace 10"
     format = "[{app_name}] <b>{summary}</b> {body}"
 
@@ -20,4 +20,4 @@
     foreground = "#ffffff"
     timeout = 0
     text = "critical"
-    custom_commands = []
+    custom_commands = [ 'gotify push -t "{app_name}" "{summary}" > /dev/null' ]

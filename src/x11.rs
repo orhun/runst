@@ -1,6 +1,6 @@
 use crate::config::{Config, GlobalConfig};
 use crate::error::{Error, Result};
-use crate::notification::Notification;
+use crate::notification::{Manager, Notification};
 use cairo::{
     Context as CairoContext, XCBConnection as CairoXCBConnection, XCBDrawable, XCBSurface,
     XCBVisualType,
@@ -8,7 +8,7 @@ use cairo::{
 use colorsys::ColorAlpha;
 use pango::{Context as PangoContext, FontDescription, Layout as PangoLayout};
 use pangocairo::functions as pango_functions;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use tinytemplate::TinyTemplate;
 use x11rb::connection::Connection;
 use x11rb::protocol::{xproto::*, Event};
@@ -146,7 +146,7 @@ impl X11 {
     pub fn handle_events<F>(
         &self,
         window: Arc<X11Window>,
-        notifications: Arc<RwLock<Vec<Notification>>>,
+        manager: Manager,
         config: Arc<Config>,
         on_press: F,
     ) -> Result<()>
@@ -160,18 +160,13 @@ impl X11 {
             while let Some(event) = event_opt {
                 match event {
                     Event::Expose(_) => {
-                        window.draw(&notifications, &config)?;
+                        let notification = manager.get_last_unread();
+                        window.draw(notification, &config)?;
                     }
                     Event::ButtonPress(_) => {
-                        let mut notifications = notifications
-                            .write()
-                            .expect("failed to retrieve notifications");
-                        let mut unread_notifications = notifications
-                            .iter_mut()
-                            .filter(|v| !v.is_read)
-                            .collect::<Vec<&mut Notification>>();
-                        unread_notifications[0].is_read = true;
-                        on_press(unread_notifications[0]);
+                        let notification = manager.get_last_unread();
+                        manager.mark_as_read();
+                        on_press(&notification);
                     }
                     _ => {}
                 }
@@ -235,37 +230,32 @@ impl X11Window {
     }
 
     /// Draws the window content.
-    fn draw(&self, notifications: &Arc<RwLock<Vec<Notification>>>, config: &Config) -> Result<()> {
-        let notifications = notifications
-            .read()
-            .expect("failed to retrieve notifications");
-        if let Some(notification) = &notifications.iter().rev().filter(|v| !v.is_read).last() {
-            let urgency_config = config.get_urgency_config(&notification.urgency);
-            urgency_config.run_commands(notification)?;
-            let message = self.template.render(
-                "notification_message",
-                &notification.into_context(&urgency_config.text),
-            )?;
-            let background_color = urgency_config.background;
-            self.cairo_context.set_source_rgba(
-                background_color.red() / 255.0,
-                background_color.green() / 255.0,
-                background_color.blue() / 255.0,
-                background_color.alpha(),
-            );
-            self.cairo_context.fill()?;
-            self.cairo_context.paint()?;
-            let foreground_color = urgency_config.foreground;
-            self.cairo_context.set_source_rgba(
-                foreground_color.red() / 255.0,
-                foreground_color.green() / 255.0,
-                foreground_color.blue() / 255.0,
-                foreground_color.alpha(),
-            );
-            self.cairo_context.move_to(0., 0.);
-            self.layout.set_markup(&message);
-            pango_functions::show_layout(&self.cairo_context, &self.layout);
-        }
+    fn draw(&self, notification: Notification, config: &Config) -> Result<()> {
+        let urgency_config = config.get_urgency_config(&notification.urgency);
+        urgency_config.run_commands(&notification)?;
+        let message = self.template.render(
+            "notification_message",
+            &notification.into_context(&urgency_config.text),
+        )?;
+        let background_color = urgency_config.background;
+        self.cairo_context.set_source_rgba(
+            background_color.red() / 255.0,
+            background_color.green() / 255.0,
+            background_color.blue() / 255.0,
+            background_color.alpha(),
+        );
+        self.cairo_context.fill()?;
+        self.cairo_context.paint()?;
+        let foreground_color = urgency_config.foreground;
+        self.cairo_context.set_source_rgba(
+            foreground_color.red() / 255.0,
+            foreground_color.green() / 255.0,
+            foreground_color.blue() / 255.0,
+            foreground_color.alpha(),
+        );
+        self.cairo_context.move_to(0., 0.);
+        self.layout.set_markup(&message);
+        pango_functions::show_layout(&self.cairo_context, &self.layout);
         Ok(())
     }
 }

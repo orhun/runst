@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 /// Possible urgency levels for the notification.
@@ -82,4 +83,63 @@ pub enum Action {
     Show(Notification),
     /// Close a notification.
     Close,
+}
+
+/// Notification manager.
+#[derive(Debug)]
+pub struct Manager {
+    /// Inner type that holds the notifications in thread-safe way.
+    inner: Arc<RwLock<Vec<Notification>>>,
+}
+
+impl Clone for Manager {
+    fn clone(&self) -> Self {
+        Self {
+            inner: Arc::clone(&self.inner),
+        }
+    }
+}
+
+impl Manager {
+    /// Initializes the notification manager.
+    pub fn init() -> Self {
+        Self {
+            inner: Arc::new(RwLock::new(Vec::new())),
+        }
+    }
+
+    /// Adds a new notifications to manage.
+    pub fn add(&self, notification: Notification) {
+        self.inner
+            .write()
+            .expect("failed to retrieve notifications")
+            .push(notification);
+    }
+
+    /// Returns the last unread notification.
+    pub fn get_last_unread(&self) -> Notification {
+        let notifications = self.inner.read().expect("failed to retrieve notifications");
+        let notifications = notifications
+            .iter()
+            .filter(|v| !v.is_read)
+            .collect::<Vec<&Notification>>();
+        notifications[notifications.len() - 1].clone()
+    }
+
+    /// Marks the last notification as read.
+    pub fn mark_as_read(&self) {
+        let mut notifications = self
+            .inner
+            .write()
+            .expect("failed to retrieve notifications");
+        if let Some(notification) = notifications.iter_mut().filter(|v| !v.is_read).last() {
+            notification.is_read = true;
+        }
+    }
+
+    /// Returns the number of unread notifications.
+    pub fn get_unread_len(&self) -> usize {
+        let notifications = self.inner.read().expect("failed to retrieve notifications");
+        notifications.iter().filter(|v| !v.is_read).count()
+    }
 }

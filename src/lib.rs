@@ -22,8 +22,9 @@ use crate::dbus::{DbusClient, DbusServer};
 use crate::error::Result;
 use crate::notification::Action;
 use crate::x11::X11;
+use notification::Manager;
 use std::sync::mpsc;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
@@ -39,13 +40,13 @@ pub fn run() -> Result<()> {
 
     let x11 = Arc::new(x11);
     let window = Arc::new(window);
-    let notifications = Arc::new(RwLock::new(Vec::new()));
+    let notifications = Manager::init();
 
     let x11_cloned = Arc::clone(&x11);
     let window_cloned = Arc::clone(&window);
     let dbus_client_cloned = Arc::clone(&dbus_client);
     let config_cloned = Arc::clone(&config);
-    let notifications_cloned = Arc::clone(&notifications);
+    let notifications_cloned = notifications.clone();
     thread::spawn(move || {
         x11_cloned
             .handle_events(
@@ -90,18 +91,13 @@ pub fn run() -> Result<()> {
                             .expect("failed to close notification");
                     });
                 }
-                notifications
-                    .write()
-                    .expect("failed to retrieve notifications")
-                    .push(notification);
+                notifications.add(notification);
+                x11_cloned.hide_window(&window)?;
                 x11_cloned.show_window(&window)?;
             }
             Action::Close => {
-                let notifications = notifications
-                    .read()
-                    .expect("failed to retrieve notifications");
                 x11_cloned.hide_window(&window)?;
-                if notifications.iter().filter(|v| !v.is_read).count() >= 1 {
+                if notifications.get_unread_len() >= 1 {
                     x11_cloned.show_window(&window)?;
                 }
             }

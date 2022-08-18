@@ -165,7 +165,7 @@ impl X11 {
                     }
                     Event::ButtonPress(_) => {
                         let notification = manager.get_last_unread();
-                        manager.mark_as_read();
+                        manager.mark_last_as_read();
                         on_press(&notification);
                     }
                     _ => {}

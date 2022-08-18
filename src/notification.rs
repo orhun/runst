@@ -35,10 +35,10 @@ impl Default for Urgency {
 /// See [D-Bus Notify Parameters](https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html)
 #[derive(Clone, Debug, Default)]
 pub struct Notification {
+    /// The optional notification ID.
+    pub id: u32,
     /// Name of the application that sends the notification.
     pub app_name: String,
-    /// The optional notification ID.
-    pub replaces_id: u32,
     /// Summary text.
     pub summary: String,
     /// Body.
@@ -82,7 +82,7 @@ pub enum Action {
     /// Show a notification.
     Show(Notification),
     /// Close a notification.
-    Close,
+    Close(u32),
 }
 
 /// Notification manager.
@@ -127,12 +127,26 @@ impl Manager {
     }
 
     /// Marks the last notification as read.
-    pub fn mark_as_read(&self) {
+    pub fn mark_last_as_read(&self) {
         let mut notifications = self
             .inner
             .write()
             .expect("failed to retrieve notifications");
         if let Some(notification) = notifications.iter_mut().filter(|v| !v.is_read).last() {
+            notification.is_read = true;
+        }
+    }
+
+    /// Marks the given notification as read.
+    pub fn mark_as_read(&self, id: u32) {
+        let mut notifications = self
+            .inner
+            .write()
+            .expect("failed to retrieve notifications");
+        if let Some(notification) = notifications
+            .iter_mut()
+            .find(|notification| notification.id == id)
+        {
             notification.is_read = true;
         }
     }

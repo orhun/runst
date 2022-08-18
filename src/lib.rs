@@ -55,7 +55,7 @@ pub fn run() -> Result<()> {
                 config_cloned,
                 |notification| {
                     dbus_client_cloned
-                        .close_notification(notification.replaces_id, timeout)
+                        .close_notification(notification.id, timeout)
                         .expect("failed to close notification");
                 },
             )
@@ -87,7 +87,7 @@ pub fn run() -> Result<()> {
                     thread::spawn(move || {
                         thread::sleep(timeout);
                         dbus_client_cloned
-                            .close_notification(notification.replaces_id, timeout)
+                            .close_notification(notification.id, timeout)
                             .expect("failed to close notification");
                     });
                 }
@@ -95,7 +95,8 @@ pub fn run() -> Result<()> {
                 x11_cloned.hide_window(&window)?;
                 x11_cloned.show_window(&window)?;
             }
-            Action::Close => {
+            Action::Close(id) => {
+                notifications.mark_as_read(id);
                 x11_cloned.hide_window(&window)?;
                 if notifications.get_unread_len() >= 1 {
                     x11_cloned.show_window(&window)?;

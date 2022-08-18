@@ -5,6 +5,7 @@ use dbus::blocking::{Connection, Proxy};
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
 use dbus_crossroads::Crossroads;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::mpsc::Sender;
 use std::time::Duration;
 
@@ -12,6 +13,9 @@ mod dbus_server {
     #![allow(clippy::too_many_arguments)]
     include!(concat!(env!("OUT_DIR"), "/introspection.rs"));
 }
+
+/// ID counter for the notification.
+static ID_COUNT: AtomicU32 = AtomicU32::new(1);
 
 /// D-Bus interface for desktop notifications.
 const NOTIFICATION_INTERFACE: &str = "org.freedesktop.Notifications";
@@ -42,9 +46,14 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
         hints: dbus::arg::PropMap,
         expire_timeout: i32,
     ) -> Result<u32, dbus::MethodErr> {
+        let id = if replaces_id == 0 {
+            ID_COUNT.fetch_add(1, Ordering::Relaxed)
+        } else {
+            replaces_id
+        };
         match self.sender.send(Action::Show(Notification {
+            id,
             app_name,
-            replaces_id,
             summary,
             body,
             expire_timeout: if expire_timeout != -1 {
@@ -62,13 +71,13 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
                 .unwrap_or_default(),
             is_read: false,
         })) {
-            Ok(_) => Ok(replaces_id),
+            Ok(_) => Ok(id),
             Err(e) => Err(dbus::MethodErr::failed(&e)),
         }
     }
 
-    fn close_notification(&mut self, _id: u32) -> Result<(), dbus::MethodErr> {
-        match self.sender.send(Action::Close) {
+    fn close_notification(&mut self, id: u32) -> Result<(), dbus::MethodErr> {
+        match self.sender.send(Action::Close(id)) {
             Ok(_) => Ok(()),
             Err(e) => Err(dbus::MethodErr::failed(&e)),
         }

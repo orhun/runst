@@ -84,11 +84,14 @@ pub fn run() -> Result<()> {
                 });
                 if !timeout.is_zero() {
                     let dbus_client_cloned = Arc::clone(&dbus_client);
+                    let notifications_cloned = notifications.clone();
                     thread::spawn(move || {
                         thread::sleep(timeout);
-                        dbus_client_cloned
-                            .close_notification(notification.id, timeout)
-                            .expect("failed to close notification");
+                        if notifications_cloned.is_unread(notification.id) {
+                            dbus_client_cloned
+                                .close_notification(notification.id, timeout)
+                                .expect("failed to close notification");
+                        }
                     });
                 }
                 notifications.add(notification);

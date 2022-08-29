@@ -156,4 +156,14 @@ impl Manager {
         let notifications = self.inner.read().expect("failed to retrieve notifications");
         notifications.iter().filter(|v| !v.is_read).count()
     }
+
+    /// Returns true if the notification is unread.
+    pub fn is_unread(&self, id: u32) -> bool {
+        let notifications = self.inner.read().expect("failed to retrieve notifications");
+        notifications
+            .iter()
+            .find(|notification| notification.id == id)
+            .map(|v| !v.is_read)
+            .unwrap_or_default()
+    }
 }

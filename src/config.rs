@@ -5,14 +5,19 @@ use serde::de::{Deserializer, Error as SerdeError};
 use serde::ser::Serializer;
 use serde::{Deserialize, Serialize};
 use sscanf::scanf;
+use std::env;
 use std::fs;
+use std::path::PathBuf;
 use std::process::Command;
 use std::result::Result as StdResult;
 use std::str::FromStr;
 use tinytemplate::TinyTemplate;
 
+/// Environment variable for the configuration file.
+const CONFIG_ENV: &str = "RUNST_CONFIG";
+
 /// Name of the default configuration file.
-pub const DEFAULT_CONFIG: &str = concat!(env!("CARGO_PKG_NAME"), ".toml");
+const DEFAULT_CONFIG: &str = concat!(env!("CARGO_PKG_NAME"), ".toml");
 
 /// Configuration.
 #[derive(Debug, Deserialize, Serialize)]
@@ -29,10 +34,26 @@ pub struct Config {
 
 impl Config {
     /// Parses the configuration file.
-    pub fn parse(file: &str) -> Result<Self> {
-        let contents = fs::read_to_string(file)?;
-        let config = toml::from_str(&contents)?;
-        Ok(config)
+    pub fn parse() -> Result<Self> {
+        for config_path in [
+            env::var(CONFIG_ENV).ok().map(PathBuf::from),
+            Some(PathBuf::from(DEFAULT_CONFIG)),
+            dirs::config_dir().map(|p| p.join(env!("CARGO_PKG_NAME")).join(DEFAULT_CONFIG)),
+            dirs::home_dir().map(|p| {
+                p.join(format!(".{}", env!("CARGO_PKG_NAME")))
+                    .join(DEFAULT_CONFIG)
+            }),
+        ]
+        .iter()
+        .flatten()
+        {
+            if config_path.exists() {
+                let contents = fs::read_to_string(config_path)?;
+                let config = toml::from_str(&contents)?;
+                return Ok(config);
+            }
+        }
+        Err(Error::Config(String::from("configuration file not found")))
     }
 
     /// Returns the appropriate urgency configuration.

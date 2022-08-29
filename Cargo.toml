@@ -19,6 +19,7 @@ toml = "0.5.8"
 sscanf = "0.3.1"
 colorsys = "0.6.6"
 tinytemplate = "1.2.1"
+dirs = "4.0.0"
 
 [build-dependencies]
 dbus-codegen = "0.10.0"

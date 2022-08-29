@@ -32,7 +32,9 @@ thiserror_lite::err_enum! {
         #[error("Integer conversion error: `{}`")]
         IntegerConversion(#[from] std::num::TryFromIntError),
         #[error("Template error: `{}`")]
-        Template(#[from] tinytemplate::error::Error)
+        Template(#[from] tinytemplate::error::Error),
+        #[error("Config error: `{}`")]
+        Config(String),
     }
 }
 

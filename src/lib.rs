@@ -17,7 +17,7 @@ pub mod config;
 /// Notification manager.
 pub mod notification;
 
-use crate::config::{Config, DEFAULT_CONFIG};
+use crate::config::Config;
 use crate::dbus::{DbusClient, DbusServer};
 use crate::error::Result;
 use crate::notification::Action;
@@ -30,7 +30,7 @@ use std::time::Duration;
 
 /// Runs `runst`.
 pub fn run() -> Result<()> {
-    let config = Arc::new(Config::parse(DEFAULT_CONFIG)?);
+    let config = Arc::new(Config::parse()?);
 
     let mut x11 = X11::init(None)?;
     let window = x11.create_window(&config.global)?;

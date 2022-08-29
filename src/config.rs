@@ -1,6 +1,7 @@
 use crate::error::{Error, Result};
 use crate::notification::{Notification, Urgency};
 use colorsys::Rgb;
+use rust_embed::RustEmbed;
 use serde::de::{Deserializer, Error as SerdeError};
 use serde::ser::Serializer;
 use serde::{Deserialize, Serialize};
@@ -10,7 +11,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 use std::result::Result as StdResult;
-use std::str::FromStr;
+use std::str::{self, FromStr};
 use tinytemplate::TinyTemplate;
 
 /// Environment variable for the configuration file.
@@ -18,6 +19,11 @@ const CONFIG_ENV: &str = "RUNST_CONFIG";
 
 /// Name of the default configuration file.
 const DEFAULT_CONFIG: &str = concat!(env!("CARGO_PKG_NAME"), ".toml");
+
+/// Embedded (default) configuration.
+#[derive(Debug, RustEmbed)]
+#[folder = "config/"]
+struct EmbeddedConfig;
 
 /// Configuration.
 #[derive(Debug, Deserialize, Serialize)]
@@ -37,7 +43,6 @@ impl Config {
     pub fn parse() -> Result<Self> {
         for config_path in [
             env::var(CONFIG_ENV).ok().map(PathBuf::from),
-            Some(PathBuf::from(DEFAULT_CONFIG)),
             dirs::config_dir().map(|p| p.join(env!("CARGO_PKG_NAME")).join(DEFAULT_CONFIG)),
             dirs::home_dir().map(|p| {
                 p.join(format!(".{}", env!("CARGO_PKG_NAME")))
@@ -53,7 +58,13 @@ impl Config {
                 return Ok(config);
             }
         }
-        Err(Error::Config(String::from("configuration file not found")))
+        if let Some(embedded_config) = EmbeddedConfig::get(DEFAULT_CONFIG)
+            .and_then(|v| String::from_utf8(v.data.as_ref().to_vec()).ok())
+        {
+            Ok(toml::from_str(&embedded_config)?)
+        } else {
+            Err(Error::Config(String::from("configuration file not found")))
+        }
     }
 
     /// Returns the appropriate urgency configuration.

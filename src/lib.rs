@@ -113,7 +113,7 @@ pub fn run() -> Result<()> {
                     notifications.mark_last_as_read();
                 }
                 x11_cloned.hide_window(&window)?;
-                if notifications.get_unread_len() >= 1 {
+                if notifications.get_unread_count() >= 1 {
                     x11_cloned.show_window(&window)?;
                 }
             }

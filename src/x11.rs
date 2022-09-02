@@ -161,7 +161,8 @@ impl X11 {
                 match event {
                     Event::Expose(_) => {
                         let notification = manager.get_last_unread();
-                        window.draw(notification, &config)?;
+                        let unread_count = manager.get_unread_count();
+                        window.draw(notification, unread_count, &config)?;
                     }
                     Event::ButtonPress(_) => {
                         let notification = manager.get_last_unread();
@@ -230,13 +231,20 @@ impl X11Window {
     }
 
     /// Draws the window content.
-    fn draw(&self, notification: Notification, config: &Config) -> Result<()> {
+    fn draw(&self, notification: Notification, unread_count: usize, config: &Config) -> Result<()> {
         let urgency_config = config.get_urgency_config(&notification.urgency);
         urgency_config.run_commands(&notification)?;
-        let message = self.template.render(
-            "notification_message",
-            &notification.into_context(&urgency_config.text),
-        )?;
+        let mut message = self
+            .template
+            .render(
+                "notification_message",
+                &notification.into_context(&urgency_config.text),
+            )?
+            .trim()
+            .to_string();
+        if unread_count > 1 {
+            message = format!("{} ({})", message, unread_count);
+        }
         let background_color = urgency_config.background;
         self.cairo_context.set_source_rgba(
             background_color.red() / 255.0,

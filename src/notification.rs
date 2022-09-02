@@ -189,7 +189,7 @@ impl Manager {
     }
 
     /// Returns the number of unread notifications.
-    pub fn get_unread_len(&self) -> usize {
+    pub fn get_unread_count(&self) -> usize {
         let notifications = self.inner.read().expect("failed to retrieve notifications");
         notifications.iter().filter(|v| !v.is_read).count()
     }

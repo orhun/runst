@@ -4,6 +4,7 @@ use dbus::arg::RefArg;
 use dbus::blocking::{Connection, Proxy};
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
+use dbus::MethodErr;
 use dbus_crossroads::Crossroads;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::mpsc::Sender;
@@ -77,7 +78,7 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
     }
 
     fn close_notification(&mut self, id: u32) -> Result<(), dbus::MethodErr> {
-        match self.sender.send(Action::Close(id)) {
+        match self.sender.send(Action::Close(Some(id))) {
             Ok(_) => Ok(()),
             Err(e) => Err(dbus::MethodErr::failed(&e)),
         }
@@ -128,8 +129,34 @@ impl DbusServer {
         self.connection
             .request_name(NOTIFICATION_INTERFACE, false, true, false)?;
         let token = dbus_server::register_org_freedesktop_notifications(&mut self.crossroads);
+        self.crossroads.insert(
+            NOTIFICATION_PATH,
+            &[token],
+            DbusNotification {
+                sender: sender.clone(),
+            },
+        );
+        let token = self.crossroads.register(NOTIFICATION_INTERFACE, |builder| {
+            let sender_cloned = sender.clone();
+            builder.method("History", (), (), move |_, _, ()| {
+                sender_cloned
+                    .send(Action::ShowLast)
+                    .map_err(|e| MethodErr::failed(&e))
+            });
+            let sender_cloned = sender.clone();
+            builder.method("Close", (), (), move |_, _, ()| {
+                sender_cloned
+                    .send(Action::Close(None))
+                    .map_err(|e| MethodErr::failed(&e))
+            });
+            builder.method("CloseAll", (), (), move |_, _, ()| {
+                sender
+                    .send(Action::CloseAll)
+                    .map_err(|e| MethodErr::failed(&e))
+            });
+        });
         self.crossroads
-            .insert(NOTIFICATION_PATH, &[token], DbusNotification { sender });
+            .insert(format!("{}/ctl", NOTIFICATION_PATH), &[token], ());
         self.connection.start_receive(
             MatchRule::new_method_call(),
             Box::new(move |message, connection| {

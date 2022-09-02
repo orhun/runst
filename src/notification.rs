@@ -81,8 +81,12 @@ pub struct Context<'a> {
 pub enum Action {
     /// Show a notification.
     Show(Notification),
+    /// Show the last notification.
+    ShowLast,
     /// Close a notification.
-    Close(u32),
+    Close(Option<u32>),
+    /// Close all the notifications.
+    CloseAll,
 }
 
 /// Notification manager.
@@ -137,6 +141,30 @@ impl Manager {
         }
     }
 
+    /// Marks the next notification as unread starting from the first one.
+    ///
+    /// Returns true if there is an unread notification remaining.
+    pub fn mark_next_as_unread(&self) -> bool {
+        let mut notifications = self
+            .inner
+            .write()
+            .expect("failed to retrieve notifications");
+        let last_unread_index = notifications.iter_mut().position(|v| !v.is_read);
+        if last_unread_index.is_none() {
+            let len = notifications.len();
+            notifications[len - 1].is_read = false;
+        }
+        if let Some(index) = last_unread_index {
+            notifications[index].is_read = true;
+            if index > 0 {
+                notifications[index - 1].is_read = false;
+            } else {
+                return false;
+            }
+        }
+        true
+    }
+
     /// Marks the given notification as read.
     pub fn mark_as_read(&self, id: u32) {
         let mut notifications = self
@@ -149,6 +177,15 @@ impl Manager {
         {
             notification.is_read = true;
         }
+    }
+
+    /// Marks all the notifications as read.
+    pub fn mark_all_as_read(&self) {
+        let mut notifications = self
+            .inner
+            .write()
+            .expect("failed to retrieve notifications");
+        notifications.iter_mut().for_each(|v| v.is_read = true);
     }
 
     /// Returns the number of unread notifications.

@@ -98,12 +98,28 @@ pub fn run() -> Result<()> {
                 x11_cloned.hide_window(&window)?;
                 x11_cloned.show_window(&window)?;
             }
+            Action::ShowLast => {
+                if notifications.mark_next_as_unread() {
+                    x11_cloned.hide_window(&window)?;
+                    x11_cloned.show_window(&window)?;
+                } else {
+                    x11_cloned.hide_window(&window)?;
+                }
+            }
             Action::Close(id) => {
-                notifications.mark_as_read(id);
+                if let Some(id) = id {
+                    notifications.mark_as_read(id);
+                } else {
+                    notifications.mark_last_as_read();
+                }
                 x11_cloned.hide_window(&window)?;
                 if notifications.get_unread_len() >= 1 {
                     x11_cloned.show_window(&window)?;
                 }
+            }
+            Action::CloseAll => {
+                notifications.mark_all_as_read();
+                x11_cloned.hide_window(&window)?;
             }
         }
     }

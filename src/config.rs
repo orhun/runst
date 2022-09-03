@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::result::Result as StdResult;
 use std::str::{self, FromStr};
-use tinytemplate::TinyTemplate;
+use tera::Tera;
 
 /// Environment variable for the configuration file.
 const CONFIG_ENV: &str = "RUNST_CONFIG";
@@ -153,9 +153,8 @@ impl UrgencyConfig {
     pub fn run_commands(&self, notification: &Notification) -> Result<()> {
         if let Some(commands) = &self.custom_commands {
             for command in commands {
-                let mut template = TinyTemplate::new();
-                template.add_template("command", command)?;
-                let command = template.render("command", &notification.into_context(&self.text))?;
+                let command =
+                    Tera::one_off(command, &notification.into_context(&self.text, 0)?, true)?;
                 Command::new("sh").args(&["-c", &command]).spawn()?;
             }
         }

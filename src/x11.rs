@@ -9,7 +9,7 @@ use colorsys::ColorAlpha;
 use pango::{Context as PangoContext, FontDescription, Layout as PangoLayout};
 use pangocairo::functions as pango_functions;
 use std::sync::Arc;
-use tinytemplate::TinyTemplate;
+use tera::Tera;
 use x11rb::connection::Connection;
 use x11rb::protocol::{xproto::*, Event};
 use x11rb::xcb_ffi::XCBConnection;
@@ -188,7 +188,7 @@ pub struct X11Window {
     /// Window layout.
     pub layout: PangoLayout,
     /// Text format.
-    pub template: TinyTemplate<'static>,
+    pub template: Tera,
 }
 
 unsafe impl Send for X11Window {}
@@ -207,8 +207,8 @@ impl X11Window {
         let layout = PangoLayout::new(&pango_context);
         let font_description = FontDescription::from_string(font);
         pango_context.set_font_description(&font_description);
-        let mut template = TinyTemplate::new();
-        template.add_template("notification_message", format)?;
+        let mut template = Tera::default();
+        template.add_raw_template("notification_message", format.trim())?;
         Ok(Self {
             id,
             cairo_context,
@@ -234,17 +234,10 @@ impl X11Window {
     fn draw(&self, notification: Notification, unread_count: usize, config: &Config) -> Result<()> {
         let urgency_config = config.get_urgency_config(&notification.urgency);
         urgency_config.run_commands(&notification)?;
-        let mut message = self
-            .template
-            .render(
-                "notification_message",
-                &notification.into_context(&urgency_config.text),
-            )?
-            .trim()
-            .to_string();
-        if unread_count > 1 {
-            message = format!("{} ({})", message, unread_count);
-        }
+        let message = self.template.render(
+            "notification_message",
+            &notification.into_context(&urgency_config.text, unread_count)?,
+        )?;
         let background_color = urgency_config.background;
         self.cairo_context.set_source_rgba(
             background_color.red() / 255.0,

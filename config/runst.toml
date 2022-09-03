@@ -1,7 +1,11 @@
 [global]
     geometry = "1920x23+0+0"
     font = "Monospace 10"
-    format = "[{app_name}] <b>{summary}</b> {body}"
+    format = """
+    [{{app_name}}] <b>{{summary}}</b>\
+    {% if body %} {{body}}{% endif %}\
+    {% if unread_count > 1 %} ({{unread_count}}){% endif %}
+    """
 
 [urgency_low]
     background = "#000000"
@@ -20,4 +24,4 @@
     foreground = "#ffffff"
     timeout = 0
     text = "critical"
-    custom_commands = [ 'gotify push -t "{app_name}" "{summary}" > /dev/null' ]
+    custom_commands = [ 'gotify push -t "{{app_name}}" "{{summary}}" > /dev/null' ]

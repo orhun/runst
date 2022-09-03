@@ -1,6 +1,8 @@
+use crate::error::Result;
 use serde::Serialize;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
+use tera::Context as TeraContext;
 
 /// Possible urgency levels for the notification.
 #[derive(Clone, Debug, Serialize)]
@@ -53,19 +55,24 @@ pub struct Notification {
 
 impl Notification {
     /// Converts [`Notification`] into [`Context`].
-    pub fn into_context<'a>(&'a self, urgency_text: &'a str) -> Context {
-        Context {
+    pub fn into_context<'a>(
+        &'a self,
+        urgency_text: &'a str,
+        unread_count: usize,
+    ) -> Result<TeraContext> {
+        Ok(TeraContext::from_serialize(Context {
             app_name: &self.app_name,
             summary: &self.summary,
             body: &self.body,
-            urgency: urgency_text,
-        }
+            urgency_text,
+            unread_count,
+        })?)
     }
 }
 
 /// Template context for the notification.
 #[derive(Clone, Debug, Default, Serialize)]
-pub struct Context<'a> {
+struct Context<'a> {
     /// Name of the application that sends the notification.
     pub app_name: &'a str,
     /// Summary text.
@@ -73,7 +80,10 @@ pub struct Context<'a> {
     /// Body.
     pub body: &'a str,
     /// Urgency.
-    pub urgency: &'a str,
+    #[serde(rename = "urgency")]
+    pub urgency_text: &'a str,
+    /// Count of unread notifications.
+    pub unread_count: usize,
 }
 
 /// Possible actions for a notification.

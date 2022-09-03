@@ -18,9 +18,9 @@ serde = { version = "1.0.140", features = ["derive"] }
 toml = "0.5.8"
 sscanf = "0.3.1"
 colorsys = "0.6.6"
-tinytemplate = "1.2.1"
 dirs = "4.0.0"
 rust-embed = { version = "6.4.0", features = ["compression"] }
+tera = "1.17.0"
 
 [build-dependencies]
 dbus-codegen = "0.10.0"

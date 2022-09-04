@@ -33,6 +33,10 @@ thiserror_lite::err_enum! {
         IntegerConversion(#[from] std::num::TryFromIntError),
         #[error("Template error: `{}`")]
         Template(#[from] tera::Error),
+        #[error("Template parse error:\n{}")]
+        TemplateParse(String),
+        #[error("Template render error:\n{}")]
+        TemplateRender(String),
         #[error("Config error: `{}`")]
         Config(String),
     }

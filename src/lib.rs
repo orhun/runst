@@ -48,18 +48,18 @@ pub fn run() -> Result<()> {
     let config_cloned = Arc::clone(&config);
     let notifications_cloned = notifications.clone();
     thread::spawn(move || {
-        x11_cloned
-            .handle_events(
-                window_cloned,
-                notifications_cloned,
-                config_cloned,
-                |notification| {
-                    dbus_client_cloned
-                        .close_notification(notification.id, timeout)
-                        .expect("failed to close notification");
-                },
-            )
-            .expect("failed to handle X11 events");
+        if let Err(e) = x11_cloned.handle_events(
+            window_cloned,
+            notifications_cloned,
+            config_cloned,
+            |notification| {
+                dbus_client_cloned
+                    .close_notification(notification.id, timeout)
+                    .expect("failed to close notification");
+            },
+        ) {
+            eprintln!("Failed to handle X11 events: {}", e)
+        }
     });
 
     let (sender, receiver) = mpsc::channel();

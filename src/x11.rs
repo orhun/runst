@@ -8,6 +8,7 @@ use cairo::{
 use colorsys::ColorAlpha;
 use pango::{Context as PangoContext, FontDescription, Layout as PangoLayout};
 use pangocairo::functions as pango_functions;
+use std::error::Error as StdError;
 use std::sync::Arc;
 use tera::Tera;
 use x11rb::connection::Connection;
@@ -208,7 +209,13 @@ impl X11Window {
         let font_description = FontDescription::from_string(font);
         pango_context.set_font_description(&font_description);
         let mut template = Tera::default();
-        template.add_raw_template("notification_message", format.trim())?;
+        if let Err(e) = template.add_raw_template("notification_message_template", format.trim()) {
+            return if let Some(error_source) = e.source() {
+                Err(Error::TemplateParse(error_source.to_string()))
+            } else {
+                Err(Error::Template(e))
+            };
+        }
         Ok(Self {
             id,
             cairo_context,
@@ -234,10 +241,19 @@ impl X11Window {
     fn draw(&self, notification: Notification, unread_count: usize, config: &Config) -> Result<()> {
         let urgency_config = config.get_urgency_config(&notification.urgency);
         urgency_config.run_commands(&notification)?;
-        let message = self.template.render(
-            "notification_message",
+        let message = match self.template.render(
+            "notification_message_template",
             &notification.into_context(&urgency_config.text, unread_count)?,
-        )?;
+        ) {
+            Ok(v) => Ok::<String, Error>(v),
+            Err(e) => {
+                if let Some(error_source) = e.source() {
+                    Err(Error::TemplateRender(error_source.to_string()))
+                } else {
+                    Err(Error::Template(e))
+                }
+            }
+        }?;
         let background_color = urgency_config.background;
         self.cairo_context.set_source_rgba(
             background_color.red() / 255.0,

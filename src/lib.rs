@@ -99,7 +99,9 @@ pub fn run() -> Result<()> {
                 x11_cloned.show_window(&window)?;
             }
             Action::ShowLast => {
-                if notifications.mark_next_as_unread() {
+                if notifications.count() == 0 {
+                    continue;
+                } else if notifications.mark_next_as_unread() {
                     x11_cloned.hide_window(&window)?;
                     x11_cloned.show_window(&window)?;
                 } else {

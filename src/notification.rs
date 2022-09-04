@@ -127,6 +127,14 @@ impl Manager {
         }
     }
 
+    /// Returns the number of notifications.
+    pub fn count(&self) -> usize {
+        self.inner
+            .read()
+            .expect("failed to retrieve notifications")
+            .len()
+    }
+
     /// Adds a new notifications to manage.
     pub fn add(&self, notification: Notification) {
         self.inner

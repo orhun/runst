@@ -8,7 +8,7 @@ use dbus::MethodErr;
 use dbus_crossroads::Crossroads;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::mpsc::Sender;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 mod dbus_server {
     #![allow(clippy::too_many_arguments)]
@@ -71,6 +71,10 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
                 .map(|v| v.into())
                 .unwrap_or_default(),
             is_read: false,
+            timestamp: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map_err(|e| dbus::MethodErr::failed(&e))?
+                .as_secs(),
         })) {
             Ok(_) => Ok(id),
             Err(e) => Err(dbus::MethodErr::failed(&e)),

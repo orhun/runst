@@ -51,6 +51,8 @@ pub struct Notification {
     pub urgency: Urgency,
     /// Whether if the notification is read.
     pub is_read: bool,
+    /// Timestamp that the notification is created.
+    pub timestamp: u64,
 }
 
 impl Notification {
@@ -66,6 +68,7 @@ impl Notification {
             body: &self.body,
             urgency_text,
             unread_count,
+            timestamp: self.timestamp,
         })?)
     }
 }
@@ -84,6 +87,8 @@ struct Context<'a> {
     pub urgency_text: &'a str,
     /// Count of unread notifications.
     pub unread_count: usize,
+    /// Timestamp of the notification.
+    pub timestamp: u64,
 }
 
 /// Possible actions for a notification.

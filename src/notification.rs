@@ -1,5 +1,6 @@
 use crate::error::{Error, Result};
-use serde::Serialize;
+use regex::Regex;
+use serde::{Deserialize, Serialize};
 use std::error::Error as StdError;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
@@ -97,6 +98,37 @@ impl Notification {
             }
         }
     }
+
+    /// Returns true if the given filter matches the notification message.
+    pub fn matches_filter(&self, filter: &NotificationFilter) -> bool {
+        macro_rules! check_filter {
+            ($field: ident) => {
+                if let Some($field) = &filter.$field {
+                    if !$field.is_match(&self.$field) {
+                        return false;
+                    }
+                }
+            };
+        }
+        check_filter!(app_name);
+        check_filter!(summary);
+        check_filter!(body);
+        true
+    }
+}
+
+/// Notification message filter.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct NotificationFilter {
+    /// Name of the application.
+    #[serde(with = "serde_regex", default)]
+    pub app_name: Option<Regex>,
+    /// Summary text.
+    #[serde(with = "serde_regex", default)]
+    pub summary: Option<Regex>,
+    /// Body.
+    #[serde(with = "serde_regex", default)]
+    pub body: Option<Regex>,
 }
 
 /// Template context for the notification.
@@ -251,5 +283,58 @@ impl Manager {
             .find(|notification| notification.id == id)
             .map(|v| !v.is_read)
             .unwrap_or_default()
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_notification_filter() {
+        let notification = Notification {
+            app_name: String::from("app"),
+            summary: String::from("test"),
+            body: String::from("this is a test notification"),
+            ..Default::default()
+        };
+        assert!(notification.matches_filter(&NotificationFilter {
+            app_name: Regex::new("app").ok(),
+            summary: None,
+            body: None,
+        }));
+        assert!(notification.matches_filter(&NotificationFilter {
+            app_name: None,
+            summary: Regex::new("te*").ok(),
+            body: None,
+        }));
+        assert!(notification.matches_filter(&NotificationFilter {
+            app_name: None,
+            summary: None,
+            body: Regex::new("notification").ok(),
+        }));
+        assert!(notification.matches_filter(&NotificationFilter {
+            app_name: Regex::new("app").ok(),
+            summary: Regex::new("test").ok(),
+            body: Regex::new("notification").ok(),
+        }));
+        assert!(notification.matches_filter(&NotificationFilter {
+            app_name: None,
+            summary: None,
+            body: None,
+        }));
+        assert!(!notification.matches_filter(&NotificationFilter {
+            app_name: Regex::new("xxx").ok(),
+            summary: None,
+            body: Regex::new("yyy").ok(),
+        }));
+        assert!(!notification.matches_filter(&NotificationFilter {
+            app_name: Regex::new("xxx").ok(),
+            summary: Regex::new("aaa").ok(),
+            body: Regex::new("yyy").ok(),
+        }));
+        assert!(!notification.matches_filter(&NotificationFilter {
+            app_name: Regex::new("app").ok(),
+            summary: Regex::new("invalid").ok(),
+            body: Regex::new("regex").ok(),
+        }));
     }
 }

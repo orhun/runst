@@ -28,4 +28,6 @@
     foreground = "#ffffff"
     timeout = 0
     text = "critical"
-    custom_commands = [ 'gotify push -t "{{app_name}}" "{{summary}}" > /dev/null' ]
+    custom_commands = [
+        { filter = '{ "app_name":"notify-send" }', command = 'gotify push -t "{{app_name}}" "[{{summary}}] {{body}}" > /dev/null' }
+    ]

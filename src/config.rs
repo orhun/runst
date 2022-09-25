@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::notification::{Notification, Urgency};
+use crate::notification::{Notification, NotificationFilter, Urgency};
 use colorsys::Rgb;
 use rust_embed::RustEmbed;
 use serde::de::{Deserializer, Error as SerdeError};
@@ -147,21 +147,7 @@ pub struct UrgencyConfig {
     /// Text.
     pub text: String,
     /// Custom OS commands to run.
-    pub custom_commands: Option<Vec<String>>,
-}
-
-impl UrgencyConfig {
-    /// Runs the custom OS commands that are determined by configuration.
-    pub fn run_commands(&self, notification: &Notification) -> Result<()> {
-        if let Some(commands) = &self.custom_commands {
-            for command in commands {
-                let command =
-                    Tera::one_off(command, &notification.into_context(&self.text, 0)?, true)?;
-                Command::new("sh").args(&["-c", &command]).spawn()?;
-            }
-        }
-        Ok(())
-    }
+    pub custom_commands: Option<Vec<CustomCommand>>,
 }
 
 /// Custom deserializer implementation for converting `String` to [`Rgb`]
@@ -179,4 +165,50 @@ where
     S: Serializer,
 {
     s.serialize_str(&value.to_hex_string())
+}
+
+impl UrgencyConfig {
+    /// Runs the custom OS commands that are determined by configuration.
+    pub fn run_commands(&self, notification: &Notification) -> Result<()> {
+        if let Some(commands) = &self.custom_commands {
+            for command in commands {
+                if let Some(filter) = &command.filter {
+                    if !notification.matches_filter(filter) {
+                        continue;
+                    }
+                }
+                let command = Tera::one_off(
+                    &command.command,
+                    &notification.into_context(&self.text, 0)?,
+                    true,
+                )?;
+                Command::new("sh").args(&["-c", &command]).spawn()?;
+            }
+        }
+        Ok(())
+    }
+}
+
+/// Custom OS commands along with notification filters.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct CustomCommand {
+    /// Notification message filter.
+    #[serde(deserialize_with = "deserialize_filter_from_string", default)]
+    filter: Option<NotificationFilter>,
+    /// Command.
+    command: String,
+}
+
+/// Custom deserializer implementation for converting `String` to [`NotificationFilter`]
+fn deserialize_filter_from_string<'de, D>(
+    deserializer: D,
+) -> StdResult<Option<NotificationFilter>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: Option<&str> = Deserialize::deserialize(deserializer)?;
+    match value {
+        Some(v) => serde_json::from_str(v).map_err(SerdeError::custom),
+        None => Ok(None),
+    }
 }

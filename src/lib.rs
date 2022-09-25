@@ -22,6 +22,7 @@ use crate::dbus::{DbusClient, DbusServer};
 use crate::error::Result;
 use crate::notification::Action;
 use crate::x11::X11;
+use estimated_read_time::Options;
 use notification::Manager;
 use std::sync::mpsc;
 use std::sync::Arc;
@@ -75,12 +76,15 @@ pub fn run() -> Result<()> {
         match receiver.recv()? {
             Action::Show(notification) => {
                 let timeout = notification.expire_timeout.unwrap_or_else(|| {
-                    Duration::from_secs(
-                        config
-                            .get_urgency_config(&notification.urgency)
-                            .timeout
-                            .into(),
-                    )
+                    let urgency_config = config.get_urgency_config(&notification.urgency);
+                    Duration::from_secs(if urgency_config.auto_timeout.unwrap_or(false) {
+                        notification
+                            .render_message(&window.template, &urgency_config.text, 0)
+                            .map(|v| estimated_read_time::text(&v, &Options::default()).seconds())
+                            .unwrap_or_default()
+                    } else {
+                        urgency_config.timeout.into()
+                    })
                 });
                 if !timeout.is_zero() {
                     let dbus_client_cloned = Arc::clone(&dbus_client);

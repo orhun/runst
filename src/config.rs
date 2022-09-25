@@ -142,6 +142,8 @@ pub struct UrgencyConfig {
     pub foreground: Rgb,
     /// Timeout value.
     pub timeout: u32,
+    /// Whether if auto timeout is enabled.
+    pub auto_timeout: Option<bool>,
     /// Text.
     pub text: String,
     /// Custom OS commands to run.

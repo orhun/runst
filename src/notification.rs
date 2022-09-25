@@ -1,8 +1,12 @@
-use crate::error::Result;
+use crate::error::{Error, Result};
 use serde::Serialize;
+use std::error::Error as StdError;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
-use tera::Context as TeraContext;
+use tera::{Context as TeraContext, Tera};
+
+/// Name of the template for rendering the notification message.
+pub const NOTIFICATION_MESSAGE_TEMPLATE: &str = "notification_message_template";
 
 /// Possible urgency levels for the notification.
 #[derive(Clone, Debug, Serialize)]
@@ -56,7 +60,7 @@ pub struct Notification {
 }
 
 impl Notification {
-    /// Converts [`Notification`] into [`Context`].
+    /// Converts [`Notification`] into [`TeraContext`].
     pub fn into_context<'a>(
         &'a self,
         urgency_text: &'a str,
@@ -70,6 +74,28 @@ impl Notification {
             unread_count,
             timestamp: self.timestamp,
         })?)
+    }
+
+    /// Renders the notification message using the given template.
+    pub fn render_message<'a>(
+        &self,
+        template: &'a Tera,
+        urgency_text: &'a str,
+        unread_count: usize,
+    ) -> Result<String> {
+        match template.render(
+            NOTIFICATION_MESSAGE_TEMPLATE,
+            &self.into_context(urgency_text, unread_count)?,
+        ) {
+            Ok(v) => Ok::<String, Error>(v),
+            Err(e) => {
+                if let Some(error_source) = e.source() {
+                    Err(Error::TemplateRender(error_source.to_string()))
+                } else {
+                    Err(Error::Template(e))
+                }
+            }
+        }
     }
 }
 

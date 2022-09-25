@@ -332,6 +332,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "estimated_read_time"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "649cfd341410b1f8906e8ca1b39e5534be9312fda9182edd770cec34dfbce8d7"
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1018,6 +1024,7 @@ dependencies = [
  "dbus-codegen",
  "dbus-crossroads",
  "dirs",
+ "estimated_read_time",
  "pango",
  "pangocairo",
  "rust-embed",

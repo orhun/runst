@@ -21,6 +21,7 @@ colorsys = "0.6.6"
 dirs = "4.0.0"
 rust-embed = { version = "6.4.0", features = ["compression"] }
 tera = "1.17.0"
+estimated_read_time = "1.0.0"
 
 [build-dependencies]
 dbus-codegen = "0.10.0"

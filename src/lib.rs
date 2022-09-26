@@ -77,7 +77,7 @@ pub fn run() -> Result<()> {
             Action::Show(notification) => {
                 let timeout = notification.expire_timeout.unwrap_or_else(|| {
                     let urgency_config = config.get_urgency_config(&notification.urgency);
-                    Duration::from_secs(if urgency_config.auto_timeout.unwrap_or(false) {
+                    Duration::from_secs(if urgency_config.auto_clear.unwrap_or(false) {
                         notification
                             .render_message(&window.template, &urgency_config.text, 0)
                             .map(|v| estimated_read_time::text(&v, &Options::default()).seconds())

@@ -143,7 +143,7 @@ pub struct UrgencyConfig {
     /// Timeout value.
     pub timeout: u32,
     /// Whether if auto timeout is enabled.
-    pub auto_timeout: Option<bool>,
+    pub auto_clear: Option<bool>,
     /// Text.
     pub text: String,
     /// Custom OS commands to run.

@@ -20,7 +20,7 @@
     background = "#000000"
     foreground = "#aaaaaa"
     timeout = 10
-    auto_timeout = true
+    auto_clear = true
     text = "normal"
 
 [urgency_critical]

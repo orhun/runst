@@ -182,7 +182,7 @@ impl UrgencyConfig {
                     &notification.into_context(&self.text, 0)?,
                     true,
                 )?;
-                Command::new("sh").args(&["-c", &command]).spawn()?;
+                Command::new("sh").args(["-c", &command]).spawn()?;
             }
         }
         Ok(())

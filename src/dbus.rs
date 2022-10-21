@@ -142,21 +142,24 @@ impl DbusServer {
         );
         let token = self.crossroads.register(NOTIFICATION_INTERFACE, |builder| {
             let sender_cloned = sender.clone();
-            builder.method("History", (), (), move |_, _, ()| {
+            builder.method("History", (), ("reply",), move |_, _, ()| {
                 sender_cloned
                     .send(Action::ShowLast)
-                    .map_err(|e| MethodErr::failed(&e))
+                    .map_err(|e| MethodErr::failed(&e))?;
+                Ok((String::from("history signal sent"),))
             });
             let sender_cloned = sender.clone();
-            builder.method("Close", (), (), move |_, _, ()| {
+            builder.method("Close", (), ("reply",), move |_, _, (): ()| {
                 sender_cloned
                     .send(Action::Close(None))
-                    .map_err(|e| MethodErr::failed(&e))
+                    .map_err(|e| MethodErr::failed(&e))?;
+                Ok((String::from("close signal sent"),))
             });
-            builder.method("CloseAll", (), (), move |_, _, ()| {
+            builder.method("CloseAll", (), ("reply",), move |_, _, ()| {
                 sender
                     .send(Action::CloseAll)
-                    .map_err(|e| MethodErr::failed(&e))
+                    .map_err(|e| MethodErr::failed(&e))?;
+                Ok((String::from("close all signal sent"),))
             });
         });
         self.crossroads

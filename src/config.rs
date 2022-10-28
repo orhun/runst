@@ -53,15 +53,19 @@ impl Config {
         .flatten()
         {
             if config_path.exists() {
+                tracing::trace!("config path found: {:?}", config_path);
                 let contents = fs::read_to_string(config_path)?;
                 let config = toml::from_str(&contents)?;
+                tracing::trace!("{:#?}", config);
                 return Ok(config);
             }
         }
         if let Some(embedded_config) = EmbeddedConfig::get(DEFAULT_CONFIG)
             .and_then(|v| String::from_utf8(v.data.as_ref().to_vec()).ok())
         {
-            Ok(toml::from_str(&embedded_config)?)
+            let config = toml::from_str(&embedded_config)?;
+            tracing::trace!("using embedded config: {:#?}", config);
+            Ok(config)
         } else {
             Err(Error::Config(String::from("configuration file not found")))
         }
@@ -177,6 +181,7 @@ impl UrgencyConfig {
                         continue;
                     }
                 }
+                tracing::trace!("running command: {:#?}", command);
                 let command = Tera::one_off(
                     &command.command,
                     &notification.into_context(&self.text, 0)?,

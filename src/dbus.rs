@@ -10,6 +10,22 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::mpsc::Sender;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+/// D-Bus server information.
+///
+/// Specifically, the server name, vendor, version, and spec version.
+const SERVER_INFO: [&str; 4] = [
+    env!("CARGO_PKG_NAME"),
+    env!("CARGO_PKG_AUTHORS"),
+    env!("CARGO_PKG_VERSION"),
+    "1.2",
+];
+
+/// D-Bus server capabilities.
+///
+/// - `actions`: The server will provide the specified actions to the user.
+/// - `body`: Supports body text.
+const SERVER_CAPABILITIES: [&str; 2] = ["actions", "body"];
+
 mod dbus_server {
     #![allow(clippy::too_many_arguments)]
     include!(concat!(env!("OUT_DIR"), "/introspection.rs"));
@@ -33,7 +49,7 @@ pub struct DbusNotification {
 
 impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
     fn get_capabilities(&mut self) -> Result<Vec<String>, dbus::MethodErr> {
-        Ok(vec![String::from("actions"), String::from("body")])
+        Ok(SERVER_CAPABILITIES.into_iter().map(String::from).collect())
     }
 
     fn notify(
@@ -52,7 +68,7 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
         } else {
             replaces_id
         };
-        match self.sender.send(Action::Show(Notification {
+        let notification = Notification {
             id,
             app_name,
             summary,
@@ -75,13 +91,16 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
                 .duration_since(UNIX_EPOCH)
                 .map_err(|e| dbus::MethodErr::failed(&e))?
                 .as_secs(),
-        })) {
+        };
+        tracing::trace!("{:#?}", notification);
+        match self.sender.send(Action::Show(notification)) {
             Ok(_) => Ok(id),
             Err(e) => Err(dbus::MethodErr::failed(&e)),
         }
     }
 
     fn close_notification(&mut self, id: u32) -> Result<(), dbus::MethodErr> {
+        tracing::trace!("received close signal for notification: {}", id);
         match self.sender.send(Action::Close(Some(id))) {
             Ok(_) => Ok(()),
             Err(e) => Err(dbus::MethodErr::failed(&e)),
@@ -92,10 +111,10 @@ impl dbus_server::OrgFreedesktopNotifications for DbusNotification {
         &mut self,
     ) -> Result<(String, String, String, String), dbus::MethodErr> {
         Ok((
-            env!("CARGO_PKG_NAME").to_string(),
-            env!("CARGO_PKG_AUTHORS").to_string(),
-            env!("CARGO_PKG_VERSION").to_string(),
-            "1.2".to_string(),
+            SERVER_INFO[0].to_string(),
+            SERVER_INFO[1].to_string(),
+            SERVER_INFO[2].to_string(),
+            SERVER_INFO[3].to_string(),
         ))
     }
 }
@@ -114,6 +133,8 @@ pub struct DbusServer {
 impl DbusServer {
     /// Initializes the D-Bus controller.
     pub fn init() -> error::Result<Self> {
+        tracing::trace!("D-Bus server information: {:#?}", SERVER_INFO);
+        tracing::trace!("D-Bus server capabilities: {:?}", SERVER_CAPABILITIES);
         let connection = Connection::new_session()?;
         let crossroads = Crossroads::new();
         Ok(Self {
@@ -201,6 +222,11 @@ impl DbusClient {
     ///
     /// See `org.freedesktop.Notifications.CloseNotification`
     pub fn close_notification(&self, id: u32, timeout: Duration) -> error::Result<()> {
+        tracing::trace!(
+            "sending close signal for notification: {} (timeout: {}ms)",
+            id,
+            timeout.as_millis()
+        );
         let proxy = Proxy::new(
             NOTIFICATION_INTERFACE,
             NOTIFICATION_PATH,

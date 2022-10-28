@@ -31,6 +31,9 @@ use std::time::Duration;
 
 /// Runs `runst`.
 pub fn run() -> Result<()> {
+    tracing_subscriber::fmt::init();
+    tracing::info!("starting");
+
     let config = Arc::new(Config::parse()?);
 
     let mut x11 = X11::init(None)?;
@@ -54,6 +57,7 @@ pub fn run() -> Result<()> {
             notifications_cloned,
             config_cloned,
             |notification| {
+                tracing::debug!("user input detected");
                 dbus_client_cloned
                     .close_notification(notification.id, timeout)
                     .expect("failed to close notification");
@@ -66,6 +70,7 @@ pub fn run() -> Result<()> {
     let (sender, receiver) = mpsc::channel();
 
     thread::spawn(move || {
+        tracing::debug!("registering D-Bus handler");
         dbus_server
             .register_notification_handler(sender, timeout)
             .expect("failed to register D-Bus notification handler");
@@ -75,6 +80,7 @@ pub fn run() -> Result<()> {
     loop {
         match receiver.recv()? {
             Action::Show(notification) => {
+                tracing::debug!("received notification: {}", notification.id);
                 let timeout = notification.expire_timeout.unwrap_or_else(|| {
                     let urgency_config = config.get_urgency_config(&notification.urgency);
                     Duration::from_secs(if urgency_config.auto_clear.unwrap_or(false) {
@@ -87,6 +93,7 @@ pub fn run() -> Result<()> {
                     })
                 });
                 if !timeout.is_zero() {
+                    tracing::debug!("notification timeout: {}ms", timeout.as_millis());
                     let dbus_client_cloned = Arc::clone(&dbus_client);
                     let notifications_cloned = notifications.clone();
                     thread::spawn(move || {
@@ -103,6 +110,7 @@ pub fn run() -> Result<()> {
                 x11_cloned.show_window(&window)?;
             }
             Action::ShowLast => {
+                tracing::debug!("showing the last notification");
                 if notifications.count() == 0 {
                     continue;
                 } else if notifications.mark_next_as_unread() {
@@ -114,8 +122,10 @@ pub fn run() -> Result<()> {
             }
             Action::Close(id) => {
                 if let Some(id) = id {
+                    tracing::debug!("closing notification: {}", id);
                     notifications.mark_as_read(id);
                 } else {
+                    tracing::debug!("closing the last notification");
                     notifications.mark_last_as_read();
                 }
                 x11_cloned.hide_window(&window)?;
@@ -124,6 +134,7 @@ pub fn run() -> Result<()> {
                 }
             }
             Action::CloseAll => {
+                tracing::debug!("closing all notifications");
                 notifications.mark_all_as_read();
                 x11_cloned.hide_window(&window)?;
             }

@@ -43,4 +43,4 @@ thiserror_lite::err_enum! {
 }
 
 /// Type alias for the standard [`Result`] type.
-pub type Result<T> = core::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;

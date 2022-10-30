@@ -28,13 +28,21 @@ use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+use tracing_subscriber::EnvFilter;
 
 /// Runs `runst`.
 pub fn run() -> Result<()> {
-    tracing_subscriber::fmt::init();
-    tracing::info!("starting");
-
     let config = Arc::new(Config::parse()?);
+
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            EnvFilter::builder()
+                .with_default_directive(config.global.log_verbosity.into())
+                .from_env_lossy(),
+        )
+        .init();
+    tracing::trace!("{:#?}", config);
+    tracing::info!("starting");
 
     let mut x11 = X11::init(None)?;
     let window = x11.create_window(&config.global)?;

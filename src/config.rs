@@ -13,6 +13,7 @@ use std::process::Command;
 use std::result::Result as StdResult;
 use std::str::{self, FromStr};
 use tera::Tera;
+use tracing::Level;
 
 /// Environment variable for the configuration file.
 const CONFIG_ENV: &str = "RUNST_CONFIG";
@@ -53,10 +54,8 @@ impl Config {
         .flatten()
         {
             if config_path.exists() {
-                tracing::trace!("config path found: {:?}", config_path);
                 let contents = fs::read_to_string(config_path)?;
                 let config = toml::from_str(&contents)?;
-                tracing::trace!("{:#?}", config);
                 return Ok(config);
             }
         }
@@ -64,7 +63,6 @@ impl Config {
             .and_then(|v| String::from_utf8(v.data.as_ref().to_vec()).ok())
         {
             let config = toml::from_str(&embedded_config)?;
-            tracing::trace!("using embedded config: {:#?}", config);
             Ok(config)
         } else {
             Err(Error::Config(String::from("configuration file not found")))
@@ -84,6 +82,9 @@ impl Config {
 /// Global configuration.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GlobalConfig {
+    /// Log verbosity.
+    #[serde(deserialize_with = "deserialize_level_from_string", skip_serializing)]
+    pub log_verbosity: Level,
     /// Geometry of the notification window.
     #[serde(deserialize_with = "deserialize_geometry_from_string")]
     pub geometry: Geometry,
@@ -91,6 +92,15 @@ pub struct GlobalConfig {
     pub font: String,
     /// The format of the notification message.
     pub format: String,
+}
+
+/// Custom deserializer implementation for converting `String` to [`Level`]
+fn deserialize_level_from_string<'de, D>(deserializer: D) -> StdResult<Level, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: &str = Deserialize::deserialize(deserializer)?;
+    Level::from_str(value).map_err(SerdeError::custom)
 }
 
 /// Custom deserializer implementation for converting `String` to [`Geometry`]

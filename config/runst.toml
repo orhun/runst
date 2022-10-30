@@ -1,4 +1,5 @@
 [global]
+    log_verbosity = "info"
     geometry = "1920x23+0+0"
     font = "Monospace 10"
     format = """

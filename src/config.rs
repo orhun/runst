@@ -85,6 +85,8 @@ pub struct GlobalConfig {
     /// Log verbosity.
     #[serde(deserialize_with = "deserialize_level_from_string", skip_serializing)]
     pub log_verbosity: Level,
+    /// Whether if a startup notification should be shown.
+    pub startup_notification: bool,
     /// Geometry of the notification window.
     #[serde(deserialize_with = "deserialize_geometry_from_string")]
     pub geometry: Geometry,

@@ -1,11 +1,12 @@
 use crate::error;
 use crate::notification::{Action, Notification};
-use dbus::arg::RefArg;
+use dbus::arg::{RefArg, Variant};
 use dbus::blocking::{Connection, Proxy};
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
 use dbus::MethodErr;
 use dbus_crossroads::Crossroads;
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::mpsc::Sender;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -216,6 +217,43 @@ impl DbusClient {
     pub fn init() -> error::Result<Self> {
         let connection = Connection::new_session()?;
         Ok(Self { connection })
+    }
+
+    /// Sends a notification.
+    ///
+    /// See `org.freedesktop.Notifications.Notify`
+    pub fn notify<S: Into<String>>(
+        &self,
+        app_name: S,
+        summary: S,
+        body: S,
+        expire_timeout: i32,
+    ) -> error::Result<()> {
+        let proxy = Proxy::new(
+            NOTIFICATION_INTERFACE,
+            NOTIFICATION_PATH,
+            Duration::from_millis(1000),
+            &self.connection,
+        );
+        proxy.method_call(
+            NOTIFICATION_INTERFACE,
+            "Notify",
+            (
+                app_name.into(),
+                0_u32,
+                String::new(),
+                summary.into(),
+                body.into(),
+                Vec::<String>::new(),
+                {
+                    let mut hints = HashMap::<String, Variant<Box<dyn RefArg + 'static>>>::new();
+                    hints.insert(String::from("urgency"), Variant(Box::new(0_u8)));
+                    hints
+                },
+                expire_timeout,
+            ),
+        )?;
+        Ok(())
     }
 
     /// Closes the notification.

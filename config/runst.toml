@@ -1,5 +1,6 @@
 [global]
     log_verbosity = "info"
+    startup_notification = true
     geometry = "1920x23+0+0"
     font = "Monospace 10"
     format = """
@@ -14,7 +15,7 @@
 [urgency_low]
     background = "#000000"
     foreground = "#505050"
-    timeout = 10
+    timeout = 2
     text = "low"
 
 [urgency_normal]

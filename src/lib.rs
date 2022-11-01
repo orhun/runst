@@ -59,6 +59,7 @@ pub fn run() -> Result<()> {
     let dbus_client_cloned = Arc::clone(&dbus_client);
     let config_cloned = Arc::clone(&config);
     let notifications_cloned = notifications.clone();
+
     thread::spawn(move || {
         if let Err(e) = x11_cloned.handle_events(
             window_cloned,
@@ -83,6 +84,15 @@ pub fn run() -> Result<()> {
             .register_notification_handler(sender, timeout)
             .expect("failed to register D-Bus notification handler");
     });
+
+    if config.global.startup_notification {
+        dbus_client.notify(
+            env!("CARGO_PKG_NAME"),
+            "startup",
+            &format!("{} is up and running", env!("CARGO_PKG_NAME")),
+            -1,
+        )?;
+    }
 
     let x11_cloned = Arc::clone(&x11);
     loop {

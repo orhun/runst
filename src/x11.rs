@@ -64,8 +64,11 @@ impl X11 {
     /// Initializes the X11 connection.
     pub fn init(screen_num: Option<usize>) -> Result<Self> {
         let (connection, default_screen_num) = XCBConnection::connect(None)?;
+        tracing::trace!("Default screen num: {:?}", default_screen_num);
         let setup_info = connection.setup();
+        tracing::trace!("Setup info status: {:?}", setup_info.status);
         let screen = setup_info.roots[screen_num.unwrap_or(default_screen_num)].clone();
+        tracing::trace!("Screen root: {:?}", screen.root);
         let cairo =
             unsafe { CairoXCBConnection::from_raw_none(connection.get_raw_xcb_connection() as _) };
         Ok(Self {
@@ -83,6 +86,7 @@ impl X11 {
             .ok_or_else(|| Error::X11Other(String::from("cannot find a XCB visual type")))?;
         let visual = unsafe { XCBVisualType::from_raw_none(&mut visual_type as *mut _ as _) };
         let window_id = self.connection.generate_id()?;
+        tracing::trace!("Window ID: {:?}", window_id);
         self.connection.create_window(
             COPY_DEPTH_FROM_PARENT,
             window_id,
@@ -159,6 +163,7 @@ impl X11 {
             let event = self.connection.wait_for_event()?;
             let mut event_opt = Some(event);
             while let Some(event) = event_opt {
+                tracing::trace!("New event: {:?}", event);
                 match event {
                     Event::Expose(_) => {
                         let notification = manager.get_last_unread();

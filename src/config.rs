@@ -12,6 +12,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::result::Result as StdResult;
 use std::str::{self, FromStr};
+use std::time::{SystemTime, UNIX_EPOCH};
 use tera::Tera;
 use tracing::Level;
 
@@ -192,6 +193,12 @@ impl UrgencyConfig {
                     if !notification.matches_filter(filter) {
                         continue;
                     }
+                }
+                if (notification.timestamp
+                    + notification.expire_timeout.unwrap_or_default().as_secs())
+                    < SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs()
+                {
+                    continue;
                 }
                 tracing::trace!("running command: {:#?}", command);
                 let command = Tera::one_off(

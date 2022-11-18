@@ -38,6 +38,8 @@ pub enum Error {
     TemplateParse(String),
     #[error("Template render error:\n{0}")]
     TemplateRender(String),
+    #[error("System time error: `{0}`")]
+    SystemTime(#[from] std::time::SystemTimeError),
     #[error("Config error: `{0}`")]
     Config(String),
 }

@@ -183,7 +183,7 @@ impl X11 {
     }
 }
 
-/// Represenation of a X11 window.
+/// Representation of a X11 window.
 pub struct X11Window {
     /// Window ID.
     pub id: u32,

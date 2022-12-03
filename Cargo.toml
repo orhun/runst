@@ -16,7 +16,7 @@ pangocairo = "0.15.1"
 thiserror = "1.0.37"
 serde = { version = "1.0.140", features = ["derive"] }
 toml = "0.5.8"
-sscanf = "0.3.1"
+sscanf = "0.4.0"
 colorsys = "0.6.6"
 dirs = "4.0.0"
 rust-embed = { version = "6.4.0", features = ["compression"] }

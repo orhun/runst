@@ -14,7 +14,7 @@ cairo-rs = { version = "0.15.12", default-features = false, features = ["use_gli
 pango = "0.15.2"
 pangocairo = "0.15.1"
 thiserror = "1.0.37"
-serde = { version = "1.0.140", features = ["derive"] }
+serde = { version = "1.0.147", features = ["derive"] }
 toml = "0.5.8"
 sscanf = "0.3.1"
 colorsys = "0.6.6"

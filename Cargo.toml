@@ -10,7 +10,7 @@ edition = "2021"
 dbus = "0.9.6"
 dbus-crossroads = "0.5.1"
 x11rb = { version = "0.10.1", default-features = false, features = ["allow-unsafe-code"] }
-cairo-rs = { version = "0.15.12", default-features = false, features = ["use_glib", "xcb"] }
+cairo-rs = { version = "0.16.3", default-features = false, features = ["use_glib", "xcb"] }
 pango = "0.15.2"
 pangocairo = "0.15.1"
 thiserror = "1.0.37"

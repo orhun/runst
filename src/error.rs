@@ -22,8 +22,6 @@ pub enum Error {
     X11Other(String),
     #[error("Cairo error: `{0}`")]
     Cairo(#[from] cairo::Error),
-    #[error("Pango error: `{0}`")]
-    PangoOther(String),
     #[error("Receiver error: `{0}`")]
     Receiver(#[from] std::sync::mpsc::RecvError),
     #[error("TOML parsing error: `{0}`")]

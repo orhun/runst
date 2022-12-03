@@ -8,9 +8,11 @@ use cairo::{
 use colorsys::ColorAlpha;
 use pango::{Context as PangoContext, FontDescription, Layout as PangoLayout};
 use pangocairo::functions as pango_functions;
+use std::collections::HashMap;
 use std::error::Error as StdError;
 use std::sync::Arc;
-use tera::Tera;
+use std::time::Duration;
+use tera::{Result as TeraResult, Tera, Value};
 use x11rb::connection::Connection;
 use x11rb::protocol::{xproto::*, Event};
 use x11rb::xcb_ffi::XCBConnection;
@@ -221,6 +223,14 @@ impl X11Window {
                 Err(Error::Template(e))
             };
         }
+        template.register_filter(
+            "humantime",
+            |value: &Value, _: &HashMap<String, Value>| -> TeraResult<Value> {
+                let value = tera::try_get_value!("humantime_filter", "value", u64, value);
+                let value = humantime::format_duration(Duration::new(value, 0)).to_string();
+                Ok(tera::to_value(value)?)
+            },
+        );
         Ok(Self {
             id,
             cairo_context,

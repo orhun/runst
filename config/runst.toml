@@ -5,10 +5,8 @@
     font = "Monospace 10"
     format = """
     [{{app_name}}] <b>{{summary}}</b>\
-    {% if body %} {{body}}{% endif %}\
-    {% if now(timestamp=true) - timestamp > 60 %} \
-        ({{ ((now(timestamp=true) - timestamp) / 60) | int }}m ago)\
-    {% endif %}\
+    {% if body %} {{body}}{% endif %} \
+    ({{ (now(timestamp=true) - timestamp) | humantime }} ago)\
     {% if unread_count > 1 %} ({{unread_count}}){% endif %}
     """
 

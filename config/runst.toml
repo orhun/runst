@@ -6,7 +6,9 @@
     format = """
     [{{app_name}}] <b>{{summary}}</b>\
     {% if body %} {{body}}{% endif %} \
-    ({{ (now(timestamp=true) - timestamp) | humantime }} ago)\
+    {% if now(timestamp=true) - timestamp > 60 %} \
+        ({{ (now(timestamp=true) - timestamp) | humantime }} ago)\
+    {% endif %}\
     {% if unread_count > 1 %} ({{unread_count}}){% endif %}
     """
 

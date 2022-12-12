@@ -11,7 +11,7 @@ dbus = "0.9.6"
 dbus-crossroads = "0.5.1"
 x11rb = { version = "0.11.0", default-features = false, features = ["allow-unsafe-code"] }
 cairo-rs = { version = "0.16.3", default-features = false, features = ["use_glib", "xcb"] }
-pango = "0.16.3"
+pango = "0.16.5"
 pangocairo = "0.16.3"
 thiserror = "1.0.37"
 serde = { version = "1.0.148", features = ["derive"] }

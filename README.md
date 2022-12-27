@@ -1,11 +1,12 @@
-<center>
+<div align="center">
+
   <a href="https://github.com/orhun/runst">
     <img src="assets/runst-logo.jpg" width="300">
   </a>
 
 #### **`runst`** — A dead simple notification daemon 🔔💬
 
-</center>
+</div>
 
 [Desktop notifications](https://wiki.archlinux.org/title/Desktop_notifications) are small, passive popup dialogs that notify the user of particular events in an asynchronous manner. These passive popups can automatically disappear after a short period of time.
 

@@ -1,8 +1,23 @@
-<a href="https://github.com/orhun/runst">
-  <center>
+<center>
+  <a href="https://github.com/orhun/runst">
     <img src="assets/runst-logo.jpg" width="300">
-  </center>
-</a>
+  </a>
+
+#### **`runst`** — A dead simple notification daemon 🔔💬
+
+</center>
+
+[Desktop notifications](https://wiki.archlinux.org/title/Desktop_notifications) are small, passive popup dialogs that notify the user of particular events in an asynchronous manner. These passive popups can automatically disappear after a short period of time.
+
+`runst` is the server implementation of [freedesktop.org](https://www.freedesktop.org/wiki) - [Desktop Notifications Specification](https://specifications.freedesktop.org/notification-spec/notification-spec-latest.html) and it can be used to receive notifications from applications via [D-Bus](https://www.freedesktop.org/wiki/Software/dbus/).
+
+## Features
+
+- Show [D-Bus](https://www.freedesktop.org/wiki/Software/dbus/) notifications
+
+## Why this exists?
+
+## Usage
 
 ## License
 

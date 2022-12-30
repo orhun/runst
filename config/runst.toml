@@ -3,7 +3,7 @@
     startup_notification = true
     geometry = "1920x23+0+0"
     font = "Monospace 10"
-    format = """
+    template = """
     [{{app_name}}] <b>{{summary}}</b>\
     {% if body %} {{body}}{% endif %} \
     {% if now(timestamp=true) - timestamp > 60 %} \

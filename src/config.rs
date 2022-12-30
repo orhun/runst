@@ -93,8 +93,8 @@ pub struct GlobalConfig {
     pub geometry: Geometry,
     /// Text font.
     pub font: String,
-    /// The format of the notification message.
-    pub format: String,
+    /// Template for the notification message.
+    pub template: String,
 }
 
 /// Custom deserializer implementation for converting `String` to [`Level`]

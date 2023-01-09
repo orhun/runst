@@ -7,7 +7,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-dbus = "0.9.6"
+dbus = "0.9.7"
 dbus-crossroads = "0.5.1"
 x11rb = { version = "0.11.1", default-features = false, features = ["allow-unsafe-code"] }
 cairo-rs = { version = "0.16.7", default-features = false, features = ["use_glib", "xcb"] }

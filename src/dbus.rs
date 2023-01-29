@@ -185,7 +185,7 @@ impl DbusServer {
             });
         });
         self.crossroads
-            .insert(format!("{}/ctl", NOTIFICATION_PATH), &[token], ());
+            .insert(format!("{NOTIFICATION_PATH}/ctl"), &[token], ());
         self.connection.start_receive(
             MatchRule::new_method_call(),
             Box::new(move |message, connection| {

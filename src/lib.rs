@@ -72,7 +72,7 @@ pub fn run() -> Result<()> {
                     .expect("failed to close notification");
             },
         ) {
-            eprintln!("Failed to handle X11 events: {}", e)
+            eprintln!("Failed to handle X11 events: {e}")
         }
     });
 

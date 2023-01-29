@@ -26,8 +26,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let code = dbus_codegen::generate(&introspection, &gen_opts)?;
     fs::write(&gen_path, code)?;
 
-    println!("D-Bus code generated at {:?}", gen_path);
-    println!("cargo:rerun-if-changed={}", INTROSPECTION_PATH);
+    println!("D-Bus code generated at {gen_path:?}");
+    println!("cargo:rerun-if-changed={INTROSPECTION_PATH}");
     println!("cargo:rerun-if-changed=build.rs");
     Ok(())
 }

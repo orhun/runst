@@ -103,7 +103,7 @@ pub fn run() -> Result<()> {
                     let urgency_config = config.get_urgency_config(&notification.urgency);
                     Duration::from_secs(if urgency_config.auto_clear.unwrap_or(false) {
                         notification
-                            .render_message(&window.template, &urgency_config.text, 0)
+                            .render_message(&window.template, urgency_config.text, 0)
                             .map(|v| estimated_read_time::text(&v, &Options::default()).seconds())
                             .unwrap_or_default()
                     } else {

@@ -258,7 +258,7 @@ impl X11Window {
         let urgency_config = config.get_urgency_config(&notification.urgency);
         urgency_config.run_commands(&notification)?;
         let message =
-            notification.render_message(&self.template, &urgency_config.text, unread_count)?;
+            notification.render_message(&self.template, urgency_config.text, unread_count)?;
         let background_color = urgency_config.background;
         self.cairo_context.set_source_rgba(
             background_color.red() / 255.0,

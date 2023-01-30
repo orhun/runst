@@ -2,6 +2,7 @@ use crate::error::{Error, Result};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::error::Error as StdError;
+use std::fmt::Display;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use tera::{Context as TeraContext, Tera};
@@ -18,6 +19,12 @@ pub enum Urgency {
     Normal,
     /// Critical urgency.
     Critical,
+}
+
+impl Display for Urgency {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", format!("{self:?}").to_lowercase())
+    }
 }
 
 impl From<u64> for Urgency {
@@ -62,11 +69,7 @@ pub struct Notification {
 
 impl Notification {
     /// Converts [`Notification`] into [`TeraContext`].
-    pub fn into_context<'a>(
-        &'a self,
-        urgency_text: &'a str,
-        unread_count: usize,
-    ) -> Result<TeraContext> {
+    pub fn into_context(&self, urgency_text: String, unread_count: usize) -> Result<TeraContext> {
         Ok(TeraContext::from_serialize(Context {
             app_name: &self.app_name,
             summary: &self.summary,
@@ -78,15 +81,18 @@ impl Notification {
     }
 
     /// Renders the notification message using the given template.
-    pub fn render_message<'a>(
+    pub fn render_message(
         &self,
-        template: &'a Tera,
-        urgency_text: &'a str,
+        template: &Tera,
+        urgency_text: Option<String>,
         unread_count: usize,
     ) -> Result<String> {
         match template.render(
             NOTIFICATION_MESSAGE_TEMPLATE,
-            &self.into_context(urgency_text, unread_count)?,
+            &self.into_context(
+                urgency_text.unwrap_or_else(|| self.urgency.to_string()),
+                unread_count,
+            )?,
         ) {
             Ok(v) => Ok::<String, Error>(v),
             Err(e) => {
@@ -142,7 +148,7 @@ struct Context<'a> {
     pub body: &'a str,
     /// Urgency.
     #[serde(rename = "urgency")]
-    pub urgency_text: &'a str,
+    pub urgency_text: String,
     /// Count of unread notifications.
     pub unread_count: usize,
     /// Timestamp of the notification.

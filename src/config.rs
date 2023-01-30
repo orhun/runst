@@ -162,7 +162,7 @@ pub struct UrgencyConfig {
     /// Whether if auto timeout is enabled.
     pub auto_clear: Option<bool>,
     /// Text.
-    pub text: String,
+    pub text: Option<String>,
     /// Custom OS commands to run.
     pub custom_commands: Option<Vec<CustomCommand>>,
 }
@@ -203,7 +203,12 @@ impl UrgencyConfig {
                 tracing::trace!("running command: {:#?}", command);
                 let command = Tera::one_off(
                     &command.command,
-                    &notification.into_context(&self.text, 0)?,
+                    &notification.into_context(
+                        self.text
+                            .clone()
+                            .unwrap_or_else(|| notification.urgency.to_string()),
+                        0,
+                    )?,
                     true,
                 )?;
                 Command::new("sh").args(["-c", &command]).spawn()?;

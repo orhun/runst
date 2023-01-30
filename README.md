@@ -27,6 +27,12 @@
 - Auto-clear notifications based on a fixed time or estimated read time.
 - Run custom OS commands based on the matched notifications.
 
+## Roadmap
+
+`runst` is initially designed to show a simple notification window. On top of that, it combines customization-oriented and semi-innovative features. In the future, I'm aiming to shape `runst` functionality based on new ideas and feedback.
+
+Feel free to [submit an issue](https://github.com/orhun/runst/issues/new) if you have something in mind or having a problem!
+
 ## Installation
 
 ### From crates.io
@@ -188,6 +194,73 @@ A few examples would be:
 - `<tt>monospace text</tt>`: <tt>monospace text</tt>
 
 ### Urgency configuration
+
+There are 3 levels of urgency defined in the [Freedesktop](https://specifications.freedesktop.org/notification-spec/notification-spec-latest.html) specification and they define the importance of the notification.
+
+1. `low`: e.g. "joe signed on"
+2. `normal`: e.g. "you got mail"
+3. `critical`: e.g. "your computer is on fire!"
+
+You can configure `runst` to act differently based on these urgency levels. For this, there need to be 3 different sections defined in the configuration file. Each of these sections has the following fields:
+
+```toml
+[urgency_{level}] # urgency_low, urgency_normal or urgency_critical
+    background = "#000000" # background color
+    foreground = "#ffffff" # foreground color
+    timeout = 10
+    auto_clear = true
+    text = "normal"
+    custom_commands = []
+```
+
+#### `timeout`
+
+This is the default timeout value (in seconds) if the notification has no timeout specified by the sender. If the timeout is 0, the notification is not automatically closed (i.e. it never expires).
+
+#### `auto_clear`
+
+If set to `true`, the **estimated read time** of the notification is calculated and it is used as the timeout. This is useful if you want the notifications to disappear as you finish reading them.
+
+#### `text`
+
+This is the custom text for the urgency level and can be used in [template context](#context) as `urgency`. If it is not set, the corresponding urgency level is used (e.g. "low", "normal" or "critical").
+
+#### `custom_commands`
+
+With using this option, you can run custom OS commands based on urgency levels and the notification contents. The basic usage is the following:
+
+```toml
+custom_commands = [
+    { command = 'echo "{{app_name}} {{summary}} {{body}}"' } # echoes the notification to stdout
+]
+```
+
+As shown in the example above, you can specify an arbitrary command via `command` which is also processed through the template engine. This means that you can use the same [template context](#context).
+
+The filtering is done by matching the fields in JSON via using `filter` along with the `command`. For example, if you want to play a custom notification sound for a certain application:
+
+```toml
+custom_commands = [
+  { filter = '{ "app_name":"notify-send" }', command = 'aplay notification.wav' },
+  { filter = '{ "app_name":"weechat" }', command = 'aplay irc.wav' }
+]
+```
+
+The JSON filter can have the following fields:
+
+- `app_name`: Name of the application that sends the notification.
+- `summary`: Summary of the notification.
+- `body`: Body of the notification.
+
+Each of these fields is matched using regex and you can combine them as follows:
+
+```toml
+custom_commands = [
+  { filter = '{ "app_name":"telegram|discord|.*chat$","body":"^hello.*" }', command = 'gotify push -t "{{app_name}}" "someone said hi!"' }
+]
+```
+
+In this hypothetical example, we are sending a [Gotify](https://gotify.net/) notification when someone says hi to us in any chatting application matched by the regex.
 
 ## Why this exists?
 

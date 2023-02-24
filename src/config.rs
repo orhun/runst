@@ -102,8 +102,8 @@ fn deserialize_level_from_string<'de, D>(deserializer: D) -> StdResult<Level, D:
 where
     D: Deserializer<'de>,
 {
-    let value: &str = Deserialize::deserialize(deserializer)?;
-    Level::from_str(value).map_err(SerdeError::custom)
+    let value: String = Deserialize::deserialize(deserializer)?;
+    Level::from_str(&value).map_err(SerdeError::custom)
 }
 
 /// Custom deserializer implementation for converting `String` to [`Geometry`]
@@ -111,8 +111,8 @@ fn deserialize_geometry_from_string<'de, D>(deserializer: D) -> StdResult<Geomet
 where
     D: Deserializer<'de>,
 {
-    let value: &str = Deserialize::deserialize(deserializer)?;
-    Geometry::from_str(value).map_err(SerdeError::custom)
+    let value: String = Deserialize::deserialize(deserializer)?;
+    Geometry::from_str(&value).map_err(SerdeError::custom)
 }
 
 /// Window geometry.
@@ -172,8 +172,8 @@ fn deserialize_rgb_from_string<'de, D>(deserializer: D) -> StdResult<Rgb, D::Err
 where
     D: Deserializer<'de>,
 {
-    let value: &str = Deserialize::deserialize(deserializer)?;
-    Rgb::from_hex_str(value).map_err(SerdeError::custom)
+    let value: String = Deserialize::deserialize(deserializer)?;
+    Rgb::from_hex_str(&value).map_err(SerdeError::custom)
 }
 
 /// Custom serializer implementation for converting [`Rgb`] to `String`
@@ -235,9 +235,9 @@ fn deserialize_filter_from_string<'de, D>(
 where
     D: Deserializer<'de>,
 {
-    let value: Option<&str> = Deserialize::deserialize(deserializer)?;
+    let value: Option<String> = Deserialize::deserialize(deserializer)?;
     match value {
-        Some(v) => serde_json::from_str(v).map_err(SerdeError::custom),
+        Some(v) => serde_json::from_str(&v).map_err(SerdeError::custom),
         None => Ok(None),
     }
 }

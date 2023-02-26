@@ -1,10 +1,17 @@
 [package]
 name = "runst"
+version = "0.1.0"
 description = "A dead simple notification daemon"
 authors = ["Orhun Parmaksız <orhunparmaksiz@gmail.com>"]
 license = "MIT OR Apache-2.0"
-version = "0.1.0"
+readme = "README.md"
+homepage = "https://github.com/orhun/runst"
+repository = "https://github.com/orhun/runst"
+keywords = ["notification", "daemon", "dbus", "notify", "x11"]
+categories = ["command-line-utilities"]
+include = ["src/**/*", "dbus/*", "config/*", "build.rs", "Cargo.*", "LICENSE-*", "*.md"]
 edition = "2021"
+rust-version = "1.64.0"
 
 [dependencies]
 dbus = "0.9.7"

@@ -43,7 +43,7 @@ Feel free to [submit an issue](https://github.com/orhun/runst/issues/new) if you
 $ cargo install runst
 ```
 
-The minimum supported Rust version is `1.63.0`.
+The minimum supported Rust version is `1.64.0`.
 
 ### Binary releases
 

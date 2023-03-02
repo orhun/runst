@@ -4,7 +4,7 @@
     <img src="assets/runst-logo.jpg" width="300">
   </a>
 
-#### **`runst`** — A dead simple notification daemon 🔔💬
+#### **`runst`** — A dead simple notification daemon 🦡
 
 </div>
 

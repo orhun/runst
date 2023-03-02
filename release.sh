@@ -12,7 +12,7 @@ echo "Preparing $1..."
 # update the version
 msg="# bumped by release.sh"
 sed -E -i "s/^version = .* $msg$/version = \"${1#v}\" $msg/" Cargo.toml
-cargo build --locked
+cargo build
 # update the changelog
 git cliff --tag "$1" >CHANGELOG.md
 git add -A

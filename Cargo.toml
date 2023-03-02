@@ -1,6 +1,6 @@
 [package]
 name = "runst"
-version = "0.1.0"
+version = "0.1.0" # bumped by release.sh
 description = "A dead simple notification daemon"
 authors = ["Orhun Parmaksız <orhunparmaksiz@gmail.com>"]
 license = "MIT OR Apache-2.0"

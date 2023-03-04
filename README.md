@@ -176,7 +176,7 @@ Context is the model that holds the required data for template rendering. The [J
 {
   "app_name": "runst",
   "summary": "example",
-  "body": "this is a notification 🐻",
+  "body": "this is a notification 🦡",
   "urgency": "normal",
   "unread_count": 1,
   "timestamp": 1672426610

@@ -1,7 +1,7 @@
 [global]
     log_verbosity = "info"
     startup_notification = true
-    geometry = "1920x23+0+0"
+    geometry = "340x25+0+0"
     font = "Monospace 10"
     template = """
     [{{app_name}}] <b>{{summary}}</b>\
@@ -19,17 +19,14 @@
     text = "low"
 
 [urgency_normal]
-    background = "#000000"
-    foreground = "#aaaaaa"
+    background = "#bcbcb2"
+    foreground = "#3f3c35"
     timeout = 10
     auto_clear = true
     text = "normal"
 
 [urgency_critical]
-    background = "#000000"
-    foreground = "#ffffff"
+    background = "#3f3c35"
+    foreground = "#bcbcb2"
     timeout = 0
     text = "critical"
-    custom_commands = [
-        { filter = '{ "app_name":"notify-send" }', command = 'gotify push -t "{{app_name}}" "[{{summary}}] {{body}}" > /dev/null' }
-    ]

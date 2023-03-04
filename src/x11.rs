@@ -170,7 +170,7 @@ impl X11 {
                     Event::Expose(_) => {
                         let notification = manager.get_last_unread();
                         let unread_count = manager.get_unread_count();
-                        window.draw(notification, unread_count, &config)?;
+                        window.draw(&self.connection, notification, unread_count, &config)?;
                     }
                     Event::ButtonPress(_) => {
                         let notification = manager.get_last_unread();
@@ -254,7 +254,13 @@ impl X11Window {
     }
 
     /// Draws the window content.
-    fn draw(&self, notification: Notification, unread_count: usize, config: &Config) -> Result<()> {
+    fn draw(
+        &self,
+        connection: &XCBConnection,
+        notification: Notification,
+        unread_count: usize,
+        config: &Config,
+    ) -> Result<()> {
         let urgency_config = config.get_urgency_config(&notification.urgency);
         urgency_config.run_commands(&notification)?;
         let message =
@@ -277,6 +283,13 @@ impl X11Window {
         );
         self.cairo_context.move_to(0., 0.);
         self.layout.set_markup(&message);
+        if config.global.wrap_content {
+            let (width, height) = self.layout.pixel_size();
+            let values = ConfigureWindowAux::default()
+                .width(width.try_into().ok())
+                .height(height.try_into().ok());
+            connection.configure_window(self.id, &values)?;
+        }
         pango_functions::show_layout(&self.cairo_context, &self.layout);
         Ok(())
     }

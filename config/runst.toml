@@ -2,6 +2,7 @@
     log_verbosity = "info"
     startup_notification = true
     geometry = "340x25+0+0"
+    wrap_content = true
     font = "Monospace 10"
     template = """
     [{{app_name}}] <b>{{summary}}</b>\

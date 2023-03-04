@@ -91,6 +91,8 @@ pub struct GlobalConfig {
     /// Geometry of the notification window.
     #[serde(deserialize_with = "deserialize_geometry_from_string")]
     pub geometry: Geometry,
+    /// Whether if the window will be resized to wrap the content.
+    pub wrap_content: bool,
     /// Text font.
     pub font: String,
     /// Template for the notification message.

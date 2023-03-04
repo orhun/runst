@@ -148,6 +148,12 @@ Sets the window geometry. The value format is `<width>x<height>+<x>+<y>`.
 
 For setting this value, I recommend using a tool like [slop](https://github.com/naelstrof/slop) which helps with querying for a selection and printing the region to stdout.
 
+#### `wrap_content`
+
+If set to `true`, the window is resized to match the contents.
+
+If the content is larger than the window size, `geometry` option is used for maximum width and height.
+
 #### `font`
 
 Sets the font to use for the window.

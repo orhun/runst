@@ -1,7 +1,7 @@
 <div align="center">
 
   <a href="https://github.com/orhun/runst">
-    <img src="assets/runst-logo.jpg" width="300">
+    <img src="assets/runst-logo.png" width="300">
   </a>
 
 <h4><strong><code>runst</code></strong> — A dead simple notification daemon 🦡</h4>

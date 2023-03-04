@@ -121,6 +121,48 @@ Whenever an application sends a notification by sending a signal to `org.freedes
 
 Also, see [**#1**](https://github.com/orhun/runst/issues/1) for systemd integration.
 
+## Commands
+
+`runst` can be controlled with sending commands to D-Bus via [`dbus-send(1)`](https://man.archlinux.org/man/dbus-send.1.en).
+
+```sh
+dbus-send --print-reply --dest=org.freedesktop.Notifications /org/freedesktop/Notifications/ctl "org.freedesktop.Notifications.${command}"
+```
+
+Available commands are:
+
+- `History`: show the last notification.
+- `Close`: close the notification.
+- `CloseAll`: close all the notifications.
+
+For example:
+
+```sh
+# show the last notification
+dbus-send --print-reply \
+          --dest=org.freedesktop.Notifications \
+          /org/freedesktop/Notifications/ctl \
+          org.freedesktop.Notifications.History
+```
+
+An example usage for [i3](https://i3wm.org/):
+
+```sh
+# Notification history
+bindsym $mod+grave exec dbus-send --print-reply \
+        --dest=org.freedesktop.Notifications /org/freedesktop/Notifications/ctl org.freedesktop.Notifications.History
+
+# Close notification
+bindsym $mod+shift+grave exec dbus-send --print-reply \
+        --dest=org.freedesktop.Notifications /org/freedesktop/Notifications/ctl org.freedesktop.Notifications.Close
+```
+
+Additionally, to view the server version:
+
+```sh
+dbus-send --print-reply --dest=org.freedesktop.Notifications /org/freedesktop/Notifications org.freedesktop.Notifications.GetServerInformation
+```
+
 ## Configuration
 
 `runst` configuration file supports [TOML](https://github.com/toml-lang/toml) format and the default configuration values can be found [here](./config/runst.toml).

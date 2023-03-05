@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2023-03-05
+
+### 📚 Documentation
+
+- *(github)* Add Code Of Conduct
+- *(github)* Add pull request template
+- *(github)* Add issue templates
+- *(github)* Add contribution guidelines
+- *(github)* Add security policy
+- *(readme)* Add AUR instructions
+
+### ⚙️ Miscellaneous Tasks
+
+- *(github)* Enable sponsorships
+
 ## [0.1.0] - 2023-03-05
 
 ### 🚀 Features

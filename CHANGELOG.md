@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0] - 2023-03-05
+
+### 🚀 Features
+
+- *(x11)* Add `wrap_content` option
+
+### 📚 Documentation
+
+- *(project)* Update emojis in the description
+- *(readme)* Add ctl usage example
+- *(readme)* Update logo link
+
+### 🎨 Styling
+
+- *(assets)* Update demo recordings
+- *(assets)* Update project logo
+- *(notification)* Update the startup message
+- *(readme)* Use HTML for the project header
+- *(readme)* Update the emoji in README.md
+
+### ⚙️ Miscellaneous Tasks
+
+- *(assets)* Remove unnecessary asset
+- *(config)* Update default config
+- *(github)* Add Jekyll theme
+- *(github)* Remove Jekyll theme
+
 ## [0.1.0-rc.2] - 2023-03-02
 
 ### 📚 Documentation

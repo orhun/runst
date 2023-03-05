@@ -45,6 +45,14 @@ $ cargo install runst
 
 The minimum supported Rust version is `1.64.0`.
 
+### From the AUR
+
+`runst` can be installed from the [AUR](https://aur.archlinux.org/packages?O=0&SeB=nd&K=runst&outdated=&SB=p&SO=d&PP=50&submit=Go) with using an [AUR helper](https://wiki.archlinux.org/title/AUR_helpers). For example:
+
+```sh
+$ paru -S runst
+```
+
 ### Binary releases
 
 See the available binaries for different operating systems/architectures from the [releases page](https://github.com/orhun/runst/releases).

@@ -20,7 +20,7 @@ x11rb = { version = "0.11.1", default-features = false, features = ["allow-unsaf
 cairo-rs = { version = "0.17.0", default-features = false, features = ["use_glib", "xcb"] }
 pango = "0.17.0"
 pangocairo = "0.17.0"
-thiserror = "1.0.38"
+thiserror = "1.0.39"
 serde = { version = "1.0.152", features = ["derive"] }
 toml = "0.7.2"
 sscanf = "0.4.0"

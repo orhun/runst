@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2023-03-06
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deps)* Bump thiserror from 1.0.38 to 1.0.39
+- *(deps)* Bump serde_json from 1.0.93 to 1.0.94
+- *(deps)* Bump rust-embed from 6.4.2 to 6.6.0 ([#36](https://github.com/orhun/runst/issues/36))
+- *(deps)* Bump transitive dependencies
+
 ## [0.1.1] - 2023-03-05
 
 ### 📚 Documentation

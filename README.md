@@ -6,6 +6,12 @@
 
 <h4><strong><code>runst</code></strong> — A dead simple notification daemon 🦡</h4>
 
+[![GitHub Release](https://img.shields.io/github/v/release/orhun/runst?style=flat&labelColor=56534b&color=c1c1b6&logo=GitHub&logoColor=white)](https://github.com/orhun/runst/releases)
+[![Crate Release](https://img.shields.io/crates/v/runst?style=flat&labelColor=56534b&color=c1c1b6&logo=Rust&logoColor=white)](https://crates.io/crates/runst/)
+[![Continuous Integration](https://img.shields.io/github/actions/workflow/status/orhun/runst/ci.yml?branch=main&style=flat&labelColor=56534b&color=c1c1b6&logo=GitHub%20Actions&logoColor=white)](https://github.com/orhun/runst/actions?query=workflow%3A%22Continuous+Integration%22)
+[![Continuous Deployment](https://img.shields.io/github/actions/workflow/status/orhun/runst/cd.yml?style=flat&labelColor=56534b&color=c1c1b6&logo=GitHub%20Actions&logoColor=white&label=deploy)](https://github.com/orhun/runst/actions?query=workflow%3A%22Continuous+Deployment%22)
+[![Documentation](https://img.shields.io/docsrs/runst?style=flat&labelColor=56534b&color=c1c1b6&logo=Rust&logoColor=white)](https://docs.rs/runst/)
+
 </div>
 
 [Desktop notifications](https://wiki.archlinux.org/title/Desktop_notifications) are small, passive popup dialogs that notify the user of particular events in an asynchronous manner. These passive popups can automatically disappear after a short period of time.

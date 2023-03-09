@@ -6,11 +6,11 @@
 
 <h4><strong><code>runst</code></strong> — A dead simple notification daemon 🦡</h4>
 
-[![GitHub Release](https://img.shields.io/github/v/release/orhun/runst?style=flat&labelColor=56534b&color=c1c1b6&logo=GitHub&logoColor=white)](https://github.com/orhun/runst/releases)
-[![Crate Release](https://img.shields.io/crates/v/runst?style=flat&labelColor=56534b&color=c1c1b6&logo=Rust&logoColor=white)](https://crates.io/crates/runst/)
-[![Continuous Integration](https://img.shields.io/github/actions/workflow/status/orhun/runst/ci.yml?branch=main&style=flat&labelColor=56534b&color=c1c1b6&logo=GitHub%20Actions&logoColor=white)](https://github.com/orhun/runst/actions?query=workflow%3A%22Continuous+Integration%22)
-[![Continuous Deployment](https://img.shields.io/github/actions/workflow/status/orhun/runst/cd.yml?style=flat&labelColor=56534b&color=c1c1b6&logo=GitHub%20Actions&logoColor=white&label=deploy)](https://github.com/orhun/runst/actions?query=workflow%3A%22Continuous+Deployment%22)
-[![Documentation](https://img.shields.io/docsrs/runst?style=flat&labelColor=56534b&color=c1c1b6&logo=Rust&logoColor=white)](https://docs.rs/runst/)
+<a href="https://github.com/orhun/runst/releases"><img src="https://img.shields.io/github/v/release/orhun/runst?style=flat&amp;labelColor=56534b&amp;color=c1c1b6&amp;logo=GitHub&amp;logoColor=white" alt="GitHub Release"></a>
+<a href="https://crates.io/crates/runst/"><img src="https://img.shields.io/crates/v/runst?style=flat&amp;labelColor=56534b&amp;color=c1c1b6&amp;logo=Rust&amp;logoColor=white" alt="Crate Release"></a>
+<a href="https://github.com/orhun/runst/actions?query=workflow%3A%22Continuous+Integration%22"><img src="https://img.shields.io/github/actions/workflow/status/orhun/runst/ci.yml?branch=main&amp;style=flat&amp;labelColor=56534b&amp;color=c1c1b6&amp;logo=GitHub%20Actions&amp;logoColor=white" alt="Continuous Integration"></a>
+<a href="https://github.com/orhun/runst/actions?query=workflow%3A%22Continuous+Deployment%22"><img src="https://img.shields.io/github/actions/workflow/status/orhun/runst/cd.yml?style=flat&amp;labelColor=56534b&amp;color=c1c1b6&amp;logo=GitHub%20Actions&amp;logoColor=white&amp;label=deploy" alt="Continuous Deployment"></a>
+<a href="https://docs.rs/runst/"><img src="https://img.shields.io/docsrs/runst?style=flat&amp;labelColor=56534b&amp;color=c1c1b6&amp;logo=Rust&amp;logoColor=white" alt="Documentation"></a>
 
 </div>
 

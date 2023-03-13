@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2023-03-13
+
+### 🐛 Bug Fixes
+
+- *(typo)* Fix typo in security policy
+
+### 🚜 Refactor
+
+- *(cd)* Remove GitHub release requirement from crates.io step
+- *(readme)* Use HTML badges
+
+### 📚 Documentation
+
+- *(readme)* Add badges
+
+### ⚙️ Miscellaneous Tasks
+
+- *(deps)* Bump serde from 1.0.152 to 1.0.155
+- *(deps)* Bump tera from 1.17.1 to 1.18.0
+- *(deps)* Bump transitive dependencies
+- *(github)* Add custom domain for GitHub pages
+
 ## [0.1.2] - 2023-03-06
 
 ### ⚙️ Miscellaneous Tasks

@@ -29,7 +29,7 @@ dirs = "5.0.0"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 tera = "1.18.1"
 estimated_read_time = "1.0.0"
-regex = "1.8.0"
+regex = "1.8.1"
 serde_regex = "1.1.0"
 serde_json = "1.0.96"
 tracing = "0.1.37"

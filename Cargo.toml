@@ -25,7 +25,7 @@ serde = { version = "1.0.160", features = ["derive"] }
 toml = "0.7.3"
 sscanf = "0.4.0"
 colorsys = "0.6.7"
-dirs = "5.0.0"
+dirs = "5.0.1"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 tera = "1.18.1"
 estimated_read_time = "1.0.0"

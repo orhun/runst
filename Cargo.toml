@@ -17,7 +17,7 @@ rust-version = "1.64.0"
 dbus = "0.9.7"
 dbus-crossroads = "0.5.2"
 x11rb = { version = "0.11.1", default-features = false, features = ["allow-unsafe-code"] }
-cairo-rs = { version = "0.17.0", default-features = false, features = ["use_glib", "xcb"] }
+cairo-rs = { version = "0.17.10", default-features = false, features = ["use_glib", "xcb"] }
 pango = "0.17.4"
 pangocairo = "0.17.0"
 thiserror = "1.0.40"

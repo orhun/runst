@@ -65,6 +65,14 @@ Or you can install the available [AUR packages](https://aur.archlinux.org/packag
 $ paru -S runst-git
 ```
 
+### Alpine Linux
+
+`runst` is available for [Alpine Edge](https://pkgs.alpinelinux.org/packages?name=runst&branch=edge). It can be installed via [apk](https://wiki.alpinelinux.org/wiki/Alpine_Package_Keeper) after enabling the [testing repository](https://wiki.alpinelinux.org/wiki/Repositories).
+
+```sh
+apk add runst
+```
+
 ### Binary releases
 
 See the available binaries for different operating systems/architectures from the [releases page](https://github.com/orhun/runst/releases).

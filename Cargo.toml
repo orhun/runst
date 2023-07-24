@@ -17,9 +17,9 @@ rust-version = "1.64.0"
 dbus = "0.9.7"
 dbus-crossroads = "0.5.2"
 x11rb = { version = "0.12.0", default-features = false, features = ["allow-unsafe-code"] }
-cairo-rs = { version = "0.17.10", default-features = false, features = ["use_glib", "xcb"] }
-pangocairo = "0.17.10"
-pango = "0.17.10"
+cairo-rs = { version = "0.18.0", default-features = false, features = ["use_glib", "xcb"] }
+pangocairo = "0.18.0"
+pango = "0.18.0"
 thiserror = "1.0.44"
 serde = { version = "1.0.175", features = ["derive"] }
 toml = "0.7.6"

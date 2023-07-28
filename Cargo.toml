@@ -21,7 +21,7 @@ cairo-rs = { version = "0.18.0", default-features = false, features = ["use_glib
 pangocairo = "0.18.0"
 pango = "0.18.0"
 thiserror = "1.0.44"
-serde = { version = "1.0.176", features = ["derive"] }
+serde = { version = "1.0.177", features = ["derive"] }
 toml = "0.7.6"
 sscanf = "0.4.1"
 colorsys = "0.6.7"

@@ -40,6 +40,8 @@ pub enum Error {
     SystemTime(#[from] std::time::SystemTimeError),
     #[error("Config error: `{0}`")]
     Config(String),
+    #[error("Init error")]
+    InitError(String),
 }
 
 /// Type alias for the standard [`Result`] type.

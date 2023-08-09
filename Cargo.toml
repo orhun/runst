@@ -11,7 +11,7 @@ keywords = ["notification", "daemon", "dbus", "notify", "x11"]
 categories = ["command-line-utilities"]
 include = ["src/**/*", "dbus/*", "config/*", "build.rs", "Cargo.*", "LICENSE-*", "*.md"]
 edition = "2021"
-rust-version = "1.64.0"
+rust-version = "1.70.0"
 
 [dependencies]
 dbus = "0.9.7"

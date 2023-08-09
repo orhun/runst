@@ -9,15 +9,28 @@ homepage = "https://github.com/orhun/runst"
 repository = "https://github.com/orhun/runst"
 keywords = ["notification", "daemon", "dbus", "notify", "x11"]
 categories = ["command-line-utilities"]
-include = ["src/**/*", "dbus/*", "config/*", "build.rs", "Cargo.*", "LICENSE-*", "*.md"]
+include = [
+  "src/**/*",
+  "dbus/*",
+  "config/*",
+  "build.rs",
+  "Cargo.*",
+  "LICENSE-*",
+  "*.md",
+]
 edition = "2021"
 rust-version = "1.70.0"
 
 [dependencies]
 dbus = "0.9.7"
 dbus-crossroads = "0.5.2"
-x11rb = { version = "0.12.0", default-features = false, features = ["allow-unsafe-code"] }
-cairo-rs = { version = "0.18.0", default-features = false, features = ["use_glib", "xcb"] }
+x11rb = { version = "0.12.0", default-features = false, features = [
+  "allow-unsafe-code",
+] }
+cairo-rs = { version = "0.18.0", default-features = false, features = [
+  "use_glib",
+  "xcb",
+] }
 pangocairo = "0.18.0"
 pango = "0.18.0"
 thiserror = "1.0.44"

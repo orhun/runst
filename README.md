@@ -53,7 +53,7 @@ The minimum supported Rust version is `1.64.0`.
 
 ### Arch Linux
 
-`runst` can be installed from the [community repository](https://archlinux.org/packages/community/x86_64/runst/) using [pacman](https://wiki.archlinux.org/title/Pacman):
+`runst` can be installed from the [extra repository](https://archlinux.org/packages/extra/x86_64/runst/) using [pacman](https://wiki.archlinux.org/title/Pacman):
 
 ```sh
 $ pacman -S runst

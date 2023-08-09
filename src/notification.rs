@@ -309,7 +309,7 @@ mod tests {
         }));
         assert!(notification.matches_filter(&NotificationFilter {
             app_name: None,
-            summary: Regex::new("te*").ok(),
+            summary: Regex::new("tes*").ok(),
             body: None,
         }));
         assert!(notification.matches_filter(&NotificationFilter {

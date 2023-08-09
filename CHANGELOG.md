@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2023-08-09
+
+### 🐛 Bug Fixes
+
+- *(dbus)* Fail if cannot be primary notification server ([#107](https://github.com/orhun/runst/issues/107))
+
+### 📚 Documentation
+
+- *(readme)* Add instructions for installing on Alpine Linux
+- *(readme)* Update broken Arch Linux link
+
+### 🎨 Styling
+
+- *(format)* Apply formatting to the project manifest
+
+### ⚙️ Miscellaneous Tasks
+
+- *(changelog)* Skip the dependency bump entries
+- *(ci)* Integrate more tools for linting
+- *(crate)* Bump MSRV to 1.70.0
+- *(lint)* Apply workaround for codespell warnings
+
 ## [0.1.4] - 2023-06-10
 
 ### 📚 Documentation
@@ -10,40 +32,7 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
-- *(deps)* Bump toml from 0.7.2 to 0.7.3
-- *(deps)* Bump serde from 1.0.155 to 1.0.156
-- *(deps)* Bump pango from 0.17.0 to 0.17.4
-- *(deps)* Bump tera from 1.18.0 to 1.18.1
-- *(deps)* Bump thiserror from 1.0.39 to 1.0.40
-- *(deps)* Bump dirs from 4.0.0 to 5.0.0
-- *(deps)* Bump serde from 1.0.156 to 1.0.157
-- *(deps)* Bump serde from 1.0.157 to 1.0.158
-- *(deps)* Bump regex from 1.7.1 to 1.7.2
-- *(deps)* Bump regex from 1.7.2 to 1.7.3
-- *(deps)* Bump rust-embed from 6.6.0 to 6.6.1
-- *(deps)* Bump serde_json from 1.0.94 to 1.0.95
-- *(deps)* Bump serde from 1.0.158 to 1.0.159
-- *(deps)* Bump serde from 1.0.159 to 1.0.160
-- *(deps)* Bump serde_json from 1.0.95 to 1.0.96
-- *(deps)* Bump regex from 1.7.3 to 1.8.0
-- *(deps)* Bump tracing-subscriber from 0.3.16 to 0.3.17
-- *(deps)* Bump regex from 1.8.0 to 1.8.1
-- *(deps)* Bump tracing from 0.1.37 to 0.1.38
-- *(deps)* Bump dirs from 5.0.0 to 5.0.1
-- *(deps)* Bump serde from 1.0.160 to 1.0.162
-- *(deps)* Bump serde from 1.0.162 to 1.0.163
-- *(deps)* Bump toml from 0.7.3 to 0.7.4
-- *(deps)* Bump sscanf from 0.4.0 to 0.4.1
-- *(deps)* Bump regex from 1.8.1 to 1.8.2
-- *(deps)* Bump regex from 1.8.2 to 1.8.3
-- *(deps)* Bump tera from 1.18.1 to 1.19.0
-- *(deps)* Bump regex from 1.8.3 to 1.8.4
-- *(deps)* Bump serde from 1.0.163 to 1.0.164
-- *(deps)* Bump rust-embed from 6.6.1 to 6.7.0
-- *(deps)* Bump GTK dependencies
 - *(deps)* Downgrade tracing crate
-- *(deps)* Bump x11rb from 0.11.1 to 0.12.0
-- *(deps)* Bump transitive dependencies
 - *(github)* Check dependabot updates daily
 
 ## [0.1.3] - 2023-03-13
@@ -63,19 +52,7 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
-- *(deps)* Bump serde from 1.0.152 to 1.0.155
-- *(deps)* Bump tera from 1.17.1 to 1.18.0
-- *(deps)* Bump transitive dependencies
 - *(github)* Add custom domain for GitHub pages
-
-## [0.1.2] - 2023-03-06
-
-### ⚙️ Miscellaneous Tasks
-
-- *(deps)* Bump thiserror from 1.0.38 to 1.0.39
-- *(deps)* Bump serde_json from 1.0.93 to 1.0.94
-- *(deps)* Bump rust-embed from 6.4.2 to 6.6.0 ([#36](https://github.com/orhun/runst/issues/36))
-- *(deps)* Bump transitive dependencies
 
 ## [0.1.1] - 2023-03-05
 
@@ -127,7 +104,6 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
-- *(deps)* Bump transitive dependencies
 - *(release)* Update git-cliff config
 - *(release)* Remove empty lines from the tag message
 

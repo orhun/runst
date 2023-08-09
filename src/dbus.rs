@@ -1,6 +1,7 @@
-use crate::error;
+use crate::error::{self, Error};
 use crate::notification::{Action, Notification};
 use dbus::arg::{RefArg, Variant};
+use dbus::blocking::stdintf::org_freedesktop_dbus::RequestNameReply;
 use dbus::blocking::{Connection, Proxy};
 use dbus::channel::MatchingReceiver;
 use dbus::message::MatchRule;
@@ -152,8 +153,14 @@ impl DbusServer {
         sender: Sender<Action>,
         timeout: Duration,
     ) -> error::Result<()> {
-        self.connection
+        let reply = self
+            .connection
             .request_name(NOTIFICATION_INTERFACE, false, true, false)?;
+        if reply != RequestNameReply::PrimaryOwner {
+            return Err(Error::Init(
+                "Not primary D-Bus notification server, is another running?".to_string(),
+            ));
+        }
         let token = dbus_server::register_org_freedesktop_notifications(&mut self.crossroads);
         self.crossroads.insert(
             NOTIFICATION_PATH,

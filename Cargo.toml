@@ -31,7 +31,7 @@ cairo-rs = { version = "0.18.5", default-features = false, features = [
   "use_glib",
   "xcb",
 ] }
-pangocairo = "0.18.0"
+pangocairo = "0.19.1"
 pango = "0.19.0"
 thiserror = "1.0.56"
 serde = { version = "1.0.196", features = ["derive"] }

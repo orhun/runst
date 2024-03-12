@@ -33,7 +33,7 @@ cairo-rs = { version = "0.19.2", default-features = false, features = [
 ] }
 pangocairo = "0.19.2"
 pango = "0.19.2"
-thiserror = "1.0.57"
+thiserror = "1.0.58"
 serde = { version = "1.0.197", features = ["derive"] }
 toml = "0.8.10"
 sscanf = "0.4.1"

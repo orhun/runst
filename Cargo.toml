@@ -24,7 +24,7 @@ rust-version = "1.70.0"
 [dependencies]
 dbus = "0.9.7"
 dbus-crossroads = "0.5.2"
-x11rb = { version = "0.13.0", default-features = false, features = [
+x11rb = { version = "0.13.1", default-features = false, features = [
   "allow-unsafe-code",
 ] }
 cairo-rs = { version = "0.19.4", default-features = false, features = [

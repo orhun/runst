@@ -50,7 +50,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 humantime = "2.1.0"
 
 [build-dependencies]
-dbus-codegen = "0.11.0"
+dbus-codegen = "0.12.0"
 
 [profile.dev]
 opt-level = 0

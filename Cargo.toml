@@ -36,7 +36,7 @@ pango = "0.20.0"
 thiserror = "1.0.63"
 serde = { version = "1.0.204", features = ["derive"] }
 toml = "0.8.15"
-sscanf = "0.4.1"
+sscanf = "0.4.2"
 colorsys = "0.6.7"
 dirs = "5.0.1"
 rust-embed = { version = "8.5.0", features = ["compression"] }

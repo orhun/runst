@@ -940,9 +940,9 @@ dependencies = [
 
 [[package]]
 name = "pangocairo"
-version = "0.20.1"
+version = "0.20.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50e67bf91c19fccbf9394049d98c67cccec183dd73cbe54a0205da983d4174e7"
+checksum = "4291ca8cdd05e4330752bf8a450d3a4e701ca48fd9aad2b3566e92849ee4055e"
 dependencies = [
  "cairo-rs",
  "glib",

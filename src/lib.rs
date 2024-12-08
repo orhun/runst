@@ -89,7 +89,7 @@ pub fn run() -> Result<()> {
         dbus_client.notify(
             env!("CARGO_PKG_NAME"),
             "startup",
-            &format!("{} is up and running 🦡", env!("CARGO_PKG_NAME")),
+            concat!(env!("CARGO_PKG_NAME"), " is up and running 🦡"),
             -1,
         )?;
     }

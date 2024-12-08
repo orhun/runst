@@ -47,7 +47,7 @@ impl Config {
             env::var(CONFIG_ENV).ok().map(PathBuf::from),
             dirs::config_dir().map(|p| p.join(env!("CARGO_PKG_NAME")).join(DEFAULT_CONFIG)),
             dirs::home_dir().map(|p| {
-                p.join(format!(".{}", env!("CARGO_PKG_NAME")))
+                p.join(concat!(".", env!("CARGO_PKG_NAME")))
                     .join(DEFAULT_CONFIG)
             }),
         ]

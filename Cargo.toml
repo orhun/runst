@@ -47,7 +47,7 @@ serde_regex = "1.1.0"
 serde_json = "1.0.140"
 tracing = "=0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
-humantime = "2.1.0"
+humantime = "2.2.0"
 
 [build-dependencies]
 dbus-codegen = "0.12.0"

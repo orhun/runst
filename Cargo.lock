@@ -245,7 +245,7 @@ dependencies = [
  "anstream",
  "anstyle",
  "clap_lex",
- "strsim 0.11.1",
+ "strsim",
 ]
 
 [[package]]
@@ -1413,9 +1413,9 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "sscanf"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a147d3cf7e723671ed11355b5b008c8019195f7fc902e213f5557d931e9f839d"
+checksum = "cbd1009b536a04035c8ffcf967496c7726c6b4971c9939b20ad085ac9377d4f0"
 dependencies = [
  "const_format",
  "lazy_static",
@@ -1425,24 +1425,18 @@ dependencies = [
 
 [[package]]
 name = "sscanf_macro"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af3a37bdf8e90e77cc60f74473edf28d922ae2eacdd595e67724ccd2381774cc"
+checksum = "cffce0630a574bbcda2476cf733363c7e077001c386b0dea87b77eb397ca1a37"
 dependencies = [
  "convert_case",
  "proc-macro2",
  "quote",
  "regex-syntax 0.6.29",
- "strsim 0.10.0",
+ "strsim",
  "syn",
  "unicode-width",
 ]
-
-[[package]]
-name = "strsim"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "strsim"

@@ -37,7 +37,7 @@ thiserror = "2.0.12"
 serde = { version = "1.0.219", features = ["derive"] }
 toml = "0.8.23"
 sscanf = "0.4.3"
-colorsys = "0.6.7"
+colorsys = "0.7.0"
 dirs = "6.0.0"
 rust-embed = { version = "8.7.2", features = ["compression"] }
 tera = "1.20.0"

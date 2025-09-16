@@ -35,7 +35,7 @@ pangocairo = "0.21.1"
 pango = "0.21.1"
 thiserror = "2.0.16"
 serde = { version = "1.0.223", features = ["derive"] }
-toml = "0.9.5"
+toml = "0.9.6"
 sscanf = "0.4.3"
 colorsys = "0.7.1"
 dirs = "6.0.0"

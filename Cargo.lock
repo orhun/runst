@@ -1400,9 +1400,9 @@ checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 
 [[package]]
 name = "sscanf"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbd1009b536a04035c8ffcf967496c7726c6b4971c9939b20ad085ac9377d4f0"
+checksum = "569fdd714955aad3acdde5d13129eaa6c4576b759c0585488c84ad395263138a"
 dependencies = [
  "const_format",
  "lazy_static",
@@ -1412,9 +1412,9 @@ dependencies = [
 
 [[package]]
 name = "sscanf_macro"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cffce0630a574bbcda2476cf733363c7e077001c386b0dea87b77eb397ca1a37"
+checksum = "77faf04b02dc0dd55e6713fcae44aa6e8882570bae2bd873949924d6e57cca82"
 dependencies = [
  "convert_case",
  "proc-macro2",

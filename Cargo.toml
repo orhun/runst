@@ -39,7 +39,7 @@ toml = "0.9.8"
 sscanf = "0.4.4"
 colorsys = "0.7.1"
 dirs = "6.0.0"
-rust-embed = { version = "8.8.0", features = ["compression"] }
+rust-embed = { version = "8.9.0", features = ["compression"] }
 tera = "1.20.0"
 estimated_read_time = "1.0.0"
 regex = "1.12.2"

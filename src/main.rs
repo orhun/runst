@@ -1,11 +1,11 @@
-use std::process;
+mod zbusNotify;
 
-fn main() {
-    match runst::run() {
-        Ok(_) => process::exit(0),
-        Err(e) => {
-            eprintln!("{e}");
-            process::exit(1)
-        }
-    }
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    tracing_subscriber::fmt().init();
+
+    let server = zbus_notify::Notifications::new();
+    server.run().await?;
+
+    Ok(())
 }

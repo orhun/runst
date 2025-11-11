@@ -1,17 +1,19 @@
 #![allow(missing_docs)]
 
 use thiserror::Error as ThisError;
+use std::sync::mpsc::SendError;
+use crate::notification::Action;
 
 #[derive(Debug, ThisError)]
 pub enum Error {
+    #[error("Channel send error: `{0}`")]
+    Send(#[from] SendError<Action>),
     #[error("IO error: `{0}`")]
     Io(#[from] std::io::Error),
-    #[error("D-Bus error: `{0}`")]
-    Dbus(#[from] dbus::Error),
-    #[error("D-Bus string error: `{0}`")]
-    DbusString(String),
-    #[error("D-Bus argument error: `{0}`")]
-    DbusArgument(String),
+    #[error("zbus error: `{0}`")]
+    Zbus(#[from] zbus::Error),
+    #[error("zbus fdo error: `{0}`")]
+    ZbusFdo(#[from] zbus::fdo::Error),
     #[error("X11 connect error: `{0}`")]
     X11Connect(#[from] x11rb::errors::ConnectError),
     #[error("X11 connection error: `{0}`")]

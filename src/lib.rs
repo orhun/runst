@@ -5,8 +5,8 @@
 /// Error handler.
 pub mod error;
 
-/// D-Bus handler.
-pub mod dbus;
+/// zbus D-Bus handler.
+pub mod zbusNotify;
 
 /// X11 handler.
 pub mod x11;
@@ -18,16 +18,15 @@ pub mod config;
 pub mod notification;
 
 use crate::config::Config;
-use crate::dbus::{DbusClient, DbusServer};
 use crate::error::Result;
 use crate::notification::Action;
 use crate::x11::X11;
 use estimated_read_time::Options;
-use notification::Manager;
+use notification::{Manager, Notification, Urgency};
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tracing_subscriber::EnvFilter;
 
 /// Runs `runst`.
@@ -42,56 +41,120 @@ pub fn run() -> Result<()> {
         )
         .init();
     tracing::trace!("{:#?}", config);
-    tracing::info!("starting");
+    tracing::info!("starting runst with zbus");
 
     let mut x11 = X11::init(None)?;
     let window = x11.create_window(&config.global)?;
-    let dbus_server = DbusServer::init()?;
-    let dbus_client = Arc::new(DbusClient::init()?);
-    let timeout = Duration::from_millis(1000);
 
     let x11 = Arc::new(x11);
     let window = Arc::new(window);
     let notifications = Manager::init();
 
+    let (sender, receiver) = mpsc::channel();
+
+    // Spawn X11 event handler thread
     let x11_cloned = Arc::clone(&x11);
     let window_cloned = Arc::clone(&window);
-    let dbus_client_cloned = Arc::clone(&dbus_client);
     let config_cloned = Arc::clone(&config);
     let notifications_cloned = notifications.clone();
+    let sender_cloned = sender.clone();
 
     thread::spawn(move || {
         if let Err(e) = x11_cloned.handle_events(
             window_cloned,
             notifications_cloned,
             config_cloned,
-            |notification| {
+            move |notification| {
                 tracing::debug!("user input detected");
-                dbus_client_cloned
-                    .close_notification(notification.id, timeout)
-                    .expect("failed to close notification");
+                sender_cloned
+                    .send(Action::Close(Some(notification.id)))
+                    .expect("failed to send close action");
             },
         ) {
             eprintln!("Failed to handle X11 events: {e}")
         }
     });
 
-    let (sender, receiver) = mpsc::channel();
-
+    // Spawn zbus D-Bus server thread
+    let sender_for_dbus = sender.clone();
     thread::spawn(move || {
-        tracing::debug!("registering D-Bus handler");
-        dbus_server
-            .register_notification_handler(sender, timeout)
-            .expect("failed to register D-Bus notification handler");
+        tracing::debug!("starting zbus D-Bus server thread");
+        
+        let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
+        rt.block_on(async {
+            let notifications = zbusNotify::Notifications::new(sender_for_dbus.clone());
+            let control = zbusNotify::NotificationControl::new(sender_for_dbus);
+
+            // Fixed: Use connection() instead of ConnectionBuilder
+            match zbus::connection::Builder::session() {
+                Ok(builder) => {
+                    match builder
+                        .name("org.freedesktop.Notifications")
+                        .and_then(|b| b.serve_at("/org/freedesktop/Notifications", notifications))
+                        .and_then(|b| b.serve_at("/org/freedesktop/Notifications/ctl", control))
+                    {
+                        Ok(builder) => {
+                            match builder.build().await {
+                                Ok(_connection) => {
+                                    tracing::info!("zbus D-Bus server is running");
+                                    // Keep the connection alive
+                                    std::future::pending::<()>().await
+                                }
+                                Err(e) => {
+                                    eprintln!("Failed to build zbus connection: {}", e);
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to configure zbus connection: {}", e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to connect to session bus: {}", e);
+                }
+            }
+        });
     });
 
     if config.global.startup_notification {
-        dbus_client.notify(
-            env!("CARGO_PKG_NAME"),
-            "startup",
-            concat!(env!("CARGO_PKG_NAME"), " is up and running 🦡"),
-            -1,
-        )?;
+        let startup_notification = Notification {
+            id: 0,
+            app_name: env!("CARGO_PKG_NAME").to_string(),
+            summary: "startup".to_string(),
+            body: concat!(env!("CARGO_PKG_NAME"), " is up and running 🦡").to_string(),
+            expire_timeout: Some(Duration::from_secs(3)),
+            urgency: Urgency::Normal,
+            is_read: false,
+            timestamp: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0),
+        };
+        // Fixed: Handle the error properly
+        if let Err(e) = sender.send(Action::Show(startup_notification)) {
+            tracing::error!("Failed to send startup notification: {}", e);
+        }
+    }
+
+    // Small delay to let D-Bus server start
+    thread::sleep(Duration::from_millis(100));
+
+    if config.global.startup_notification {
+        let startup_notification = Notification {
+            id: 0,
+            app_name: env!("CARGO_PKG_NAME").to_string(),
+            summary: "startup".to_string(),
+            body: concat!(env!("CARGO_PKG_NAME"), " is up and running 🦡").to_string(),
+            expire_timeout: Some(Duration::from_secs(3)),
+            urgency: Urgency::Normal,
+            is_read: false,
+            timestamp: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0),
+        };
+        sender.send(Action::Show(startup_notification))?;
     }
 
     let x11_cloned = Arc::clone(&x11);
@@ -112,14 +175,15 @@ pub fn run() -> Result<()> {
                 });
                 if !timeout.is_zero() {
                     tracing::debug!("notification timeout: {}ms", timeout.as_millis());
-                    let dbus_client_cloned = Arc::clone(&dbus_client);
+                    let sender_cloned = sender.clone();
                     let notifications_cloned = notifications.clone();
+                    let notification_id = notification.id;
                     thread::spawn(move || {
                         thread::sleep(timeout);
-                        if notifications_cloned.is_unread(notification.id) {
-                            dbus_client_cloned
-                                .close_notification(notification.id, timeout)
-                                .expect("failed to close notification");
+                        if notifications_cloned.is_unread(notification_id) {
+                            sender_cloned
+                                .send(Action::Close(Some(notification_id)))
+                                .expect("failed to send close action");
                         }
                     });
                 }

@@ -6,11 +6,14 @@ use crate::notification::{Action, Notification, Urgency};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub struct Notifications {
+    /// counter for generating unique notification IDs
     next_id: std::sync::Arc<std::sync::Mutex<u32>>,
+    /// channel sender to communicate with the main notification event loop
     sender: Sender<Action>,
 }
 
 impl Notifications {
+    /// creates a new instance of the notification interface
     pub fn new(sender: Sender<Action>) -> Self {
         Self {
             next_id: std::sync::Arc::new(std::sync::Mutex::new(0)),
@@ -23,28 +26,32 @@ impl Notifications {
 impl Notifications {
     async fn get_server_information(&self) -> fdo::Result<(String, String, String, String)> {
         Ok((
-            "runst".to_string(),
-            "Orhun Parmaksız".to_string(),
-            "0.1.7".to_string(),
-            "1.2".to_string(),
+            "runst".to_string(),            // application name
+            "Orhun Parmaksız".to_string(),  // author/Vendor
+            "0.1.7".to_string(),            // version
+            "1.2".to_string(),              // notification spec version
         ))
     }
 
+    /// returns the server's capabilities
     async fn get_capabilities(&self) -> fdo::Result<Vec<String>> {
         Ok(vec!["body".to_string(), "body-markup".to_string()])
     }
 
+    /// called when an external program sends a notification request
     async fn notify(
         &self,
-        app_name: String,
-        replaces_id: u32,
-        _app_icon: String,
-        summary: String,
-        body: String,
-        _actions: Vec<String>,
-        hints: HashMap<String, zbus::zvariant::Value<'_>>,
-        expire_timeout: i32,
+        app_name: String,                                   // name of the app sending the notification
+        replaces_id: u32,                                   // iD of notification to replace, if any
+        _app_icon: String,                                  // icon field
+        summary: String,                                    // title of the notification
+        body: String,                                       // body text
+        _actions: Vec<String>,                              
+        hints: HashMap<String, zbus::zvariant::Value<'_>>,  // extra metadata
+        expire_timeout: i32,                                // time before it disappear
     ) -> fdo::Result<u32> {
+
+        // generate or reuse a notification ID
         let id = if replaces_id > 0 {
             replaces_id
         } else {
@@ -53,23 +60,26 @@ impl Notifications {
             *next_id
         };
 
-        // Fix: Use try_into() instead of downcast_ref()
+        // parse the urgency
         let urgency = hints.get("urgency")
             .and_then(|v| v.try_into().ok())
             .map(|v: u8| Urgency::from(v as u64))
             .unwrap_or_default();
-
+        
+        // convert timeout
         let expire_timeout = if expire_timeout > 0 {
             Some(Duration::from_millis(expire_timeout as u64))
         } else {
             None
         };
 
+        // record the current timestamp for when the notification is received
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
 
+        // build the notification struct used internally
         let notification = Notification {
             id,
             app_name,
@@ -81,6 +91,7 @@ impl Notifications {
             timestamp,
         };
 
+        // send the notification to the main thread for display
         self.sender
             .send(Action::Show(notification))
             .map_err(|e| fdo::Error::Failed(format!("Send failed: {}", e)))?;
@@ -88,6 +99,7 @@ impl Notifications {
         Ok(id)
     }
 
+    /// closes a notification by ID
     async fn close_notification(&self, id: u32) -> fdo::Result<()> {
         self.sender
             .send(Action::Close(Some(id)))
@@ -95,17 +107,19 @@ impl Notifications {
         Ok(())
     }
 
+    /// signal emitted when a notification is closed
     #[zbus(signal)]
     async fn notification_closed(
-        signal_emitter: &SignalEmitter<'_>,  // Should be signal_emitter, not signal_ctxt
+        signal_emitter: &SignalEmitter<'_>,  
         id: u32,
         reason: u32,
     ) -> zbus::Result<()>;
 
+    /// signal emitted when a user invokes an action button
     #[zbus(signal)]
     async fn action_invoked(
-        signal_emitter: &SignalEmitter<'_>,  // Should be signal_emitter, not signal_ctxt
-        id: u32,
+        signal_emitter: &SignalEmitter<'_>,  
+        id: u32,            
         action_key: String,
     ) -> zbus::Result<()>;
 }

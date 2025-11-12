@@ -1,8 +1,8 @@
 #![allow(missing_docs)]
 
-use thiserror::Error as ThisError;
-use std::sync::mpsc::SendError;
 use crate::notification::Action;
+use std::sync::mpsc::SendError;
+use thiserror::Error as ThisError;
 
 #[derive(Debug, ThisError)]
 pub enum Error {

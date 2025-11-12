@@ -6,7 +6,7 @@
 
 // const INTROSPECTION_PATH: &str = "dbus/introspection.xml";
 // -> Result<(), Box<dyn Error>>
-fn main()  {
+fn main() {
     // let introspection = fs::read_to_string(INTROSPECTION_PATH)?;
     // let out_dir = env::var_os("OUT_DIR").ok_or("OUT_DIR is not set")?;
 

@@ -78,8 +78,8 @@ pub fn run() -> Result<()> {
     // Spawn zbus D-Bus server thread
     let sender_for_zbus = sender.clone();
     thread::spawn(move || {
-        tracing::debug!("starting zbus D-Bus server thread");
-        
+        tracing::debug!("starting Z-Bus server thread");
+
         let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
         rt.block_on(async {
             let notifications = zbus_handler::Notifications::new(sender_for_zbus.clone());
@@ -95,7 +95,7 @@ pub fn run() -> Result<()> {
                             return;
                         }
                     };
-                    
+
                     // Build the connection
                     match builder.build().await {
                         Ok(connection) => {
@@ -108,7 +108,7 @@ pub fn run() -> Result<()> {
                                 eprintln!("Failed to serve notifications interface: {}", e);
                                 return;
                             }
-                            
+
                             // Serve the control interface
                             if let Err(e) = connection
                                 .object_server()
@@ -118,8 +118,8 @@ pub fn run() -> Result<()> {
                                 eprintln!("Failed to serve control interface: {}", e);
                                 return;
                             }
-                            
-                            tracing::info!("zbus D-Bus server is running");
+
+                            tracing::info!("Z-Bus server is running");
                             // Keep the connection alive
                             std::future::pending::<()>().await;
                         }

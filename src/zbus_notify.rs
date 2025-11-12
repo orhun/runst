@@ -1,5 +1,5 @@
 use zbus::{interface, fdo};
-use zbus::object_server::SignalContext;  // Add this import
+use zbus::object_server::SignalEmitter;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 use crate::notification::{Action, Notification, Urgency};
@@ -97,14 +97,14 @@ impl Notifications {
 
     #[zbus(signal)]
     async fn notification_closed(
-        signal_ctxt: &SignalContext<'_>,  // Fixed: removed zbus:: prefix
+        signal_emitter: &SignalEmitter<'_>,  // Should be signal_emitter, not signal_ctxt
         id: u32,
         reason: u32,
     ) -> zbus::Result<()>;
 
     #[zbus(signal)]
     async fn action_invoked(
-        signal_ctxt: &SignalContext<'_>,  // Fixed: removed zbus:: prefix
+        signal_emitter: &SignalEmitter<'_>,  // Should be signal_emitter, not signal_ctxt
         id: u32,
         action_key: String,
     ) -> zbus::Result<()>;

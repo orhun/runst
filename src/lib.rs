@@ -6,7 +6,7 @@
 pub mod error;
 
 /// zbus D-Bus handler.
-pub mod zbusNotify;
+pub mod zbus_notify;
 
 /// X11 handler.
 pub mod x11;
@@ -82,60 +82,58 @@ pub fn run() -> Result<()> {
         
         let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
         rt.block_on(async {
-            let notifications = zbusNotify::Notifications::new(sender_for_dbus.clone());
-            let control = zbusNotify::NotificationControl::new(sender_for_dbus);
+            let notifications = zbus_notify::Notifications::new(sender_for_dbus.clone());
+            let control = zbus_notify::NotificationControl::new(sender_for_dbus);
 
-            // Fixed: Use connection() instead of ConnectionBuilder
             match zbus::connection::Builder::session() {
-                Ok(builder) => {
-                    match builder
-                        .name("org.freedesktop.Notifications")
-                        .and_then(|b| b.serve_at("/org/freedesktop/Notifications", notifications))
-                        .and_then(|b| b.serve_at("/org/freedesktop/Notifications/ctl", control))
-                    {
-                        Ok(builder) => {
-                            match builder.build().await {
-                                Ok(_connection) => {
-                                    tracing::info!("zbus D-Bus server is running");
-                                    // Keep the connection alive
-                                    std::future::pending::<()>().await
-                                }
-                                Err(e) => {
-                                    eprintln!("Failed to build zbus connection: {}", e);
-                                }
+                Ok(mut builder) => {
+                    // Request the well-known name
+                    builder = match builder.name("org.freedesktop.Notifications") {
+                        Ok(b) => b,
+                        Err(e) => {
+                            eprintln!("Failed to request name: {}", e);
+                            return;
+                        }
+                    };
+                    
+                    // Build the connection
+                    match builder.build().await {
+                        Ok(connection) => {
+                            // Serve the notifications interface
+                            if let Err(e) = connection
+                                .object_server()
+                                .at("/org/freedesktop/Notifications", notifications)
+                                .await
+                            {
+                                eprintln!("Failed to serve notifications interface: {}", e);
+                                return;
                             }
+                            
+                            // Serve the control interface
+                            if let Err(e) = connection
+                                .object_server()
+                                .at("/org/freedesktop/Notifications/ctl", control)
+                                .await
+                            {
+                                eprintln!("Failed to serve control interface: {}", e);
+                                return;
+                            }
+                            
+                            tracing::info!("zbus D-Bus server is running");
+                            // Keep the connection alive
+                            std::future::pending::<()>().await;
                         }
                         Err(e) => {
-                            eprintln!("Failed to configure zbus connection: {}", e);
+                            eprintln!("Failed to build zbus connection: {}", e);
                         }
                     }
                 }
                 Err(e) => {
-                    eprintln!("Failed to connect to session bus: {}", e);
+                    eprintln!("Failed to create session builder: {}", e);
                 }
             }
         });
     });
-
-    if config.global.startup_notification {
-        let startup_notification = Notification {
-            id: 0,
-            app_name: env!("CARGO_PKG_NAME").to_string(),
-            summary: "startup".to_string(),
-            body: concat!(env!("CARGO_PKG_NAME"), " is up and running 🦡").to_string(),
-            expire_timeout: Some(Duration::from_secs(3)),
-            urgency: Urgency::Normal,
-            is_read: false,
-            timestamp: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .map(|d| d.as_secs())
-                .unwrap_or(0),
-        };
-        // Fixed: Handle the error properly
-        if let Err(e) = sender.send(Action::Show(startup_notification)) {
-            tracing::error!("Failed to send startup notification: {}", e);
-        }
-    }
 
     // Small delay to let D-Bus server start
     thread::sleep(Duration::from_millis(100));

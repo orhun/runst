@@ -1,8 +1,6 @@
-mod zbusNotify;
-
-use anyhow::Result;
-
-fn main() -> anyhow::Result<()> {
-    runst::run()?;
-    Ok(())
+fn main() {
+    if let Err(e) = runst::run() {
+        eprintln!("Error: {}", e);
+        std::process::exit(1);
+    }
 }

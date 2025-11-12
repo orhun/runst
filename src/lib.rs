@@ -5,8 +5,8 @@
 /// Error handler.
 pub mod error;
 
-/// zbus D-Bus handler.
-pub mod zbus_notify;
+/// zbus handler.
+pub mod zbus_handler;
 
 /// X11 handler.
 pub mod x11;
@@ -76,14 +76,14 @@ pub fn run() -> Result<()> {
     });
 
     // Spawn zbus D-Bus server thread
-    let sender_for_dbus = sender.clone();
+    let sender_for_zbus = sender.clone();
     thread::spawn(move || {
         tracing::debug!("starting zbus D-Bus server thread");
         
         let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
         rt.block_on(async {
-            let notifications = zbus_notify::Notifications::new(sender_for_dbus.clone());
-            let control = zbus_notify::NotificationControl::new(sender_for_dbus);
+            let notifications = zbus_handler::Notifications::new(sender_for_zbus.clone());
+            let control = zbus_handler::NotificationControl::new(sender_for_zbus);
 
             match zbus::connection::Builder::session() {
                 Ok(mut builder) => {

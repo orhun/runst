@@ -32,6 +32,7 @@
 - Template-powered ([Jinja2](http://jinja.pocoo.org/)/[Django](https://docs.djangoproject.com/en/3.1/topics/templates/)) notification text.
 - Auto-clear notifications based on a fixed time or estimated read time.
 - Run custom OS commands based on the matched notifications.
+- Z-Bus based notification backend (Rust IPC handling over the D-Bus protocol)
 
 ## Roadmap
 
@@ -83,8 +84,8 @@ Release tarballs are signed with the following PGP key: [AEF8C7261F4CEB41A448CBC
 
 #### Prerequisites
 
-- [D-Bus](https://www.freedesktop.org/wiki/Software/dbus)
-- [GLib](https://wiki.gnome.org/Projects/GLib)
+- [Z-Bus](https://docs.rs/zbus/latest/zbus/#example-code)
+- [ZVariant](https://docs.rs/zvariant/latest/zvariant/)
 - [Pango](https://pango.gnome.org)
 
 #### Instructions
@@ -135,7 +136,7 @@ The xprofile file, which is `~/.xprofile` or `/etc/xprofile`, can be styled simi
 
 ### As a D-Bus service
 
-You can create a D-Bus service to launch `runst` automatically on the first notification action. For example, you can create the following service configuration:
+Although `runst` now uses a Z-Bus backend internally, it still exposes the standard `org.freedesktop.Notifications` interface on the session D-Bus. In other words, Z-Bus handles the backend inside `runst`, while the activation mechanism is still D-Bus. Because of that, you can still use a regular D-Bus service file to launch `runst` automatically on the first notification action. For example, you can create the following service configuration:
 
 `/usr/share/dbus-1/services/org.orhun.runst.service`:
 

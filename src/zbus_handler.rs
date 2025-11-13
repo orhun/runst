@@ -5,6 +5,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use zbus::object_server::SignalEmitter;
 use zbus::{fdo, interface};
 
+const NOTIFICATION_SPEC_VERSION: &str = "1.2";
+
 pub struct Notifications {
     /// counter for generating unique notification IDs
     next_id: std::sync::Arc<std::sync::Mutex<u32>>,
@@ -26,10 +28,10 @@ impl Notifications {
 impl Notifications {
     async fn get_server_information(&self) -> fdo::Result<(String, String, String, String)> {
         Ok((
-            "runst".to_string(),           // application name
-            "Orhun Parmaksız".to_string(), // author/Vendor
-            "0.1.7".to_string(),           // version
-            "1.2".to_string(),             // notification spec version
+            env!("CARGO_PKG_NAME").to_string(),    // application name
+            env!("CARGO_PKG_AUTHORS").to_string(), // author/Vendor
+            env!("CARGO_PKG_VERSION").to_string(), // version
+            NOTIFICATION_SPEC_VERSION.to_string(), // notification spec version
         ))
     }
 

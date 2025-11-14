@@ -11,8 +11,7 @@ use tera::{Context as TeraContext, Tera};
 pub const NOTIFICATION_MESSAGE_TEMPLATE: &str = "notification_message_template";
 
 /// Possible urgency levels for the notification.
-#[derive(Clone, Debug, Serialize)]
-#[derive(Default)]
+#[derive(Clone, Debug, Serialize, Default)]
 pub enum Urgency {
     /// Low urgency.
     Low,
@@ -39,7 +38,6 @@ impl From<u64> for Urgency {
         }
     }
 }
-
 
 /// Representation of a notification.
 ///

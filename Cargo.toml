@@ -11,7 +11,6 @@ keywords = ["notification", "daemon", "dbus", "notify", "x11"]
 categories = ["command-line-utilities"]
 include = [
   "src/**/*",
-  "dbus/*",
   "config/*",
   "build.rs",
   "Cargo.*",
@@ -22,8 +21,11 @@ edition = "2021"
 rust-version = "1.70.0"
 
 [dependencies]
-dbus = "0.9.7"
-dbus-crossroads = "0.5.2"
+zbus = "5.1"
+zvariant = "5"
+tokio = { version = "1.40", features = ["rt-multi-thread", "macros"] }
+async-trait = "0.1"
+futures-util = "0.3"
 x11rb = { version = "0.13.2", default-features = false, features = [
   "allow-unsafe-code",
 ] }
@@ -45,12 +47,9 @@ estimated_read_time = "1.0.0"
 regex = "1.12.2"
 serde_regex = "1.1.0"
 serde_json = "1.0.145"
-tracing = "=0.1.41"
+tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 humantime = "2.3.0"
-
-[build-dependencies]
-dbus-codegen = "0.12.0"
 
 [profile.dev]
 opt-level = 0

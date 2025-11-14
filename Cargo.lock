@@ -1429,7 +1429,7 @@ checksum = "3582f63211428f83597b51b2ddb88e2a91a9d52d12831f9d08f5e624e8977422"
 
 [[package]]
 name = "runst"
-version = "0.1.7"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "cairo-rs",

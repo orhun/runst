@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2025-11-14
+
+### 🚀 Features
+- *(no category)* Replace D-Bus with Z-Bus ([#345](https://github.com/orhun/runst/issues/345))
+  - **BREAKING**: replace D-Bus with Z-Bus ([#345](https://github.com/orhun/runst/issues/345))
+
+
+### 🚜 Refactor
+
+- *(clippy)* Apply clippy suggestions- *(no category)* Replace format! with concat! for string literals ([#261](https://github.com/orhun/runst/issues/261))
+
+
+### 📚 Documentation
+
+- *(coc)* Fix typo
+
 ## [0.1.7] - 2024-03-26
 
 ### ⚙️ Miscellaneous Tasks

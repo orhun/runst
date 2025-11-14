@@ -12,10 +12,12 @@ pub const NOTIFICATION_MESSAGE_TEMPLATE: &str = "notification_message_template";
 
 /// Possible urgency levels for the notification.
 #[derive(Clone, Debug, Serialize)]
+#[derive(Default)]
 pub enum Urgency {
     /// Low urgency.
     Low,
     /// Normal urgency (default).
+    #[default]
     Normal,
     /// Critical urgency.
     Critical,
@@ -38,11 +40,6 @@ impl From<u64> for Urgency {
     }
 }
 
-impl Default for Urgency {
-    fn default() -> Self {
-        Self::Normal
-    }
-}
 
 /// Representation of a notification.
 ///

@@ -34,7 +34,7 @@ cairo-rs = { version = "0.21.2", default-features = false, features = [
   "xcb",
 ] }
 pangocairo = "0.21.2"
-pango = "0.21.3"
+pango = "0.21.5"
 thiserror = "2.0.17"
 serde = { version = "1.0.228", features = ["derive"] }
 toml = "0.9.8"

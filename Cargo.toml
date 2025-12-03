@@ -29,7 +29,7 @@ futures-util = "0.3"
 x11rb = { version = "0.13.2", default-features = false, features = [
   "allow-unsafe-code",
 ] }
-cairo-rs = { version = "0.21.2", default-features = false, features = [
+cairo-rs = { version = "0.21.5", default-features = false, features = [
   "use_glib",
   "xcb",
 ] }

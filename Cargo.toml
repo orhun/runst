@@ -44,7 +44,7 @@ dirs = "6.0.0"
 rust-embed = { version = "8.11.0", features = ["compression"] }
 tera = "1.20.1"
 estimated_read_time = "1.0.0"
-regex = "1.12.2"
+regex = "1.12.3"
 serde_regex = "1.1.0"
 serde_json = "1.0.149"
 tracing = "0.1.44"

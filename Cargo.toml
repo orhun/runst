@@ -21,7 +21,7 @@ edition = "2021"
 rust-version = "1.70.0"
 
 [dependencies]
-zbus = "5.13"
+zbus = "5.14"
 zvariant = "5"
 tokio = { version = "1.49", features = ["rt-multi-thread", "macros"] }
 async-trait = "0.1"

@@ -213,7 +213,7 @@ impl X11Window {
         let pango_context = pango_functions::create_context(&cairo_context);
         let layout = PangoLayout::new(&pango_context);
         let font_description = FontDescription::from_string(font);
-        pango_context.set_font_description(Some(&font_description));
+        pango_context.set_font_description(&font_description);
         let mut template = Tera::default();
         if let Err(e) =
             template.add_raw_template(NOTIFICATION_MESSAGE_TEMPLATE, raw_template.trim())

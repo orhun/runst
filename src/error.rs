@@ -28,8 +28,8 @@ pub enum Error {
     Receiver(#[from] std::sync::mpsc::RecvError),
     #[error("TOML parsing error: `{0}`")]
     Toml(#[from] toml::de::Error),
-    #[error("Scan error: `{0}`")]
-    Scanf(String),
+    #[error("Scan error")]
+    Scanf,
     #[error("Integer conversion error: `{0}`")]
     IntegerConversion(#[from] std::num::TryFromIntError),
     #[error("Template error: `{0}`")]
